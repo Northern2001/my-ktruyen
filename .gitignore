@@ -42,3 +42,9 @@ next-env.d.ts
 
 # editor
 .vscode/
+
+# Backup / temp files (from the gh-pages static build)
+*.bak
+
+# Duplicate favicon artifact (byte-identical to favicon.ico, '?' breaks Windows checkout)
+favicon.ico\?favicon.09dat5z11heb6.ico
