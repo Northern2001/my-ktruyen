@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GlobalSound } from "../components/GlobalSound";
 import { AppMenu } from "../components/AppMenu";
-import { BirthdayIntro } from "../components/BirthdayIntro";
+import { BirthdayIntroRoute } from "../components/BirthdayIntroRoute";
 import { sitePath } from "../lib/site-path";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -81,7 +81,7 @@ export default function RootLayout({
       </head>
       <body>
         <GlobalSound />
-        <BirthdayIntro />
+        <BirthdayIntroRoute />
         <div id="site-content" className="site-content">
           <AppMenu />
           {children}
