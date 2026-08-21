@@ -50,6 +50,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Wait for legacy branch deployment
+        run: sleep 60
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
