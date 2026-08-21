@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { sitePath } from "../lib/site-path";
 
 type MemoryMediaType = "image" | "video";
 
@@ -25,7 +26,7 @@ type MemoryManifest = {
 
 type MemoryFilter = "all" | MemoryMediaType;
 
-const manifestUrl = "/memory-media/manifest.json";
+const manifestUrl = sitePath("/memory-media/manifest.json");
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit",
@@ -51,7 +52,13 @@ async function readMemoryItems(signal?: AbortSignal) {
   const response = await fetch(manifestUrl, { cache: "no-store", signal });
   if (!response.ok) throw new Error(`Không thể đọc danh sách Memory (${response.status}).`);
   const manifest = (await response.json()) as MemoryManifest;
-  return Array.isArray(manifest.items) ? manifest.items : [];
+  return Array.isArray(manifest.items)
+    ? manifest.items.map((item) => ({
+        ...item,
+        thumbnailUrl: item.thumbnailUrl ? sitePath(item.thumbnailUrl) : null,
+        mediaUrl: sitePath(item.mediaUrl),
+      }))
+    : [];
 }
 
 export function MemoryGallery() {

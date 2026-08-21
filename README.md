@@ -2,7 +2,7 @@
 
 ## Memory
 
-Trang `/memory/` đọc ảnh và video từ thư mục `memory/` ở root dự án. File gốc được giữ local và không commit; website dùng bản đã tối ưu trong `public/memory-media/`.
+Trang `/memory/` đọc ảnh và video từ thư mục `memory/` ở root dự án. File gốc và bản đã tối ưu trong `public/memory-media/` đều được commit để GitHub Pages có đủ dữ liệu khi deploy.
 
 1. Thêm ảnh hoặc video vào `memory/`.
 2. Chạy `npm run sync:memory` (hoặc khởi động `npm run dev`, script sẽ tự chạy trước dev server).

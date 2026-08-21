@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Metadata } from "next";
 import { Mp3Library } from "../../components/Mp3Library";
 import type { Mp3Track } from "../../components/Mp3Library";
+import { sitePath } from "../../lib/site-path";
 
 export const metadata: Metadata = {
   title: "MP3 / MKT",
@@ -61,11 +62,11 @@ async function getMp3Tracks(): Promise<Mp3Track[]> {
 
     return {
       fileName: entry.name,
-      url: `/music/${encodeURIComponent(entry.name)}`,
+      url: sitePath(`/music/${encodeURIComponent(entry.name)}`),
       sizeBytes: fileStats.size,
       title: details.title,
       artist: details.artist,
-      imageUrl: details.imageUrl,
+      imageUrl: sitePath(details.imageUrl),
       order: details.order,
     };
   }));

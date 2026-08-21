@@ -6,6 +6,10 @@ import { Image as DreiImage, Text, useTexture } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { AdditiveBlending, FrontSide, Mesh, Object3D, PerspectiveCamera, ShaderMaterial } from "three";
 import type { DisplayMode, DisplayStyle, GalleryItem } from "./mkt-types";
+import { sitePath } from "../lib/site-path";
+
+const geistMonoFontUrl = sitePath("/fonts/GeistMono-Variable.ttf");
+const geistMonoBoldFontUrl = sitePath("/fonts/GeistMono-Bold.ttf");
 
 function playClickSound() {
   window.dispatchEvent(new Event("mkt-click"));
@@ -130,7 +134,7 @@ function ItemCaption({
   return (
     <group position={position} rotation={rotation}>
       <Text
-        font="/fonts/GeistMono-Variable.ttf"
+        font={geistMonoFontUrl}
         position={[0, 0, 0]}
         raycast={() => {}}
         anchorX="left"
@@ -155,7 +159,7 @@ function ItemCaption({
       {durationSeconds != null && (
         <>
           <Text
-            font="/fonts/GeistMono-Variable.ttf"
+            font={geistMonoFontUrl}
             position={[trackNumberWidth + 0.025, 0, 0]}
             raycast={() => {}}
             anchorX="left"
@@ -177,7 +181,7 @@ function ItemCaption({
             /
           </Text>
           <Text
-            font="/fonts/GeistMono-Variable.ttf"
+            font={geistMonoFontUrl}
             position={[trackNumberWidth + 0.075, 0, 0]}
             raycast={() => {}}
             anchorX="left"
@@ -201,7 +205,7 @@ function ItemCaption({
         </>
       )}
       <Text
-        font="/fonts/GeistMono-Bold.ttf"
+        font={geistMonoBoldFontUrl}
         position={[0, -0.07, 0]}
         raycast={() => {}}
         anchorX="left"
@@ -224,7 +228,7 @@ function ItemCaption({
       </Text>
       {hasSubtitle && (
         <Text
-          font="/fonts/GeistMono-Variable.ttf"
+          font={geistMonoFontUrl}
           position={[0, -0.16, 0]}
           raycast={() => {}}
           anchorX="left"
@@ -295,7 +299,7 @@ function CanvasPlayingIndicator({
 
 function MKTTitle() {
   return (
-    <DreiImage url="/images/mkt-logo.svg" scale={[4.4, 0.76]} transparent toneMapped={false} />
+    <DreiImage url={sitePath("/images/mkt-logo.svg")} scale={[4.4, 0.76]} transparent toneMapped={false} />
   );
 }
 

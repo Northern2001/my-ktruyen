@@ -35,12 +35,16 @@ import { MKTTrackList } from "./MKTTrackList";
 import { MKTCanvas } from "./MKTCanvas";
 import { MKTTrackDetail } from "./MKTTrackDetail";
 import { MKTDock } from "./MKTDock";
+import { sitePath } from "../lib/site-path";
 
 type GalleryItemSeed = Omit<GalleryItem, "pMobileBackground" | "bMobileBackground"> & Partial<Pick<GalleryItem, "pMobileBackground" | "bMobileBackground">>;
 
 function withGalleryDefaults(items: readonly GalleryItemSeed[]): readonly GalleryItem[] {
   return items.map((item) => ({
     ...item,
+    imageUrl: sitePath(item.imageUrl),
+    audioUrl: sitePath(item.audioUrl),
+    videoUrl: item.videoUrl ? sitePath(item.videoUrl) : undefined,
     pMobileBackground: item.pMobileBackground ?? "center",
     bMobileBackground: item.bMobileBackground ?? 0.48,
   }));
@@ -2462,7 +2466,7 @@ export function MKTScreen() {
         <>
           <h1 className={`main-title ${!isMobile ? "list-view-header" : ""}`}>
             <NextImage
-              src="/images/mkt-logo.svg"
+              src={sitePath("/images/mkt-logo.svg")}
               alt="MKT"
               width={3790}
               height={654}
@@ -2480,7 +2484,7 @@ export function MKTScreen() {
       {isPresentationReady && (!selectedProject || isDetailMinimized) && !isMobile && displayStyle === "art" && (
         <h1 className="art-style-title">
           <NextImage
-            src="/images/mkt-logo.svg"
+            src={sitePath("/images/mkt-logo.svg")}
             alt="MKT"
             width={3790}
             height={654}

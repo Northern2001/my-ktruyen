@@ -18,7 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SITE_URL: https://mkt-album.github.io
+      NEXT_PUBLIC_BASE_PATH: /my-ktruyen
+      NEXT_PUBLIC_SITE_URL: https://northern2001.github.io/my-ktruyen
 
     steps:
       - name: Checkout

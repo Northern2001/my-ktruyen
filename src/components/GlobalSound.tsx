@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { sitePath } from "../lib/site-path";
 
 const mobileMediaQuery = "(pointer: coarse), (max-width: 1199px)";
 
@@ -27,8 +28,8 @@ function makeAudioPool(url: string, poolSize: number, volume: number): AudioPool
 }
 
 export function GlobalSound() {
-  const clickUrls = useMemo(() => ["/sound/clickDown.mp3", "/sound/clickUp.mp3"], []);
-  const scrollUrl = useMemo(() => "/sound/scroll.mp3", []);
+  const clickUrls = useMemo(() => [sitePath("/sound/clickDown.mp3"), sitePath("/sound/clickUp.mp3")], []);
+  const scrollUrl = useMemo(() => sitePath("/sound/scroll.mp3"), []);
 
   const clickPoolsRef = useRef<AudioPool[] | null>(null);
   const scrollAudioRef = useRef<HTMLAudioElement | null>(null);

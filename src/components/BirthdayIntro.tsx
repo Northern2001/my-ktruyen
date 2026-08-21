@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { sitePath } from "../lib/site-path";
 import styles from "./BirthdayIntro.module.css";
 
 const birthdaySessionKey = "mkt-birthday-intro-2026";
@@ -511,7 +512,7 @@ export function BirthdayIntro() {
       <div className={styles.wishScene} aria-hidden={scene !== "wish"}>
         <div className={styles.photo} aria-hidden="true">
           <Image
-            src="/images/mkt/IMG_3265.jpg"
+            src={sitePath("/images/mkt/IMG_3265.jpg")}
             alt=""
             fill
             sizes="100vw"
