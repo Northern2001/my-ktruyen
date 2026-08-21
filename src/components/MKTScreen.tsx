@@ -1116,7 +1116,7 @@ export function MKTScreen() {
       floatingPlayerHoldUntilRef.current = 0;
       setIsFloatingPlayerExpanded(true);
     }
-    setPendingDisplayStyle(isMobile ? "list" : displayStyle);
+    setPendingDisplayStyle(displayStyle);
     setPendingDisplayMode(displayMode);
     setPendingDockPinned(isDockPinned);
     setIsSettingsOpen(true);
@@ -1395,10 +1395,8 @@ export function MKTScreen() {
 
   const handleSettingsSave = useCallback(() => {
     playClickSound();
-    if (!isMobile) {
-      setDisplayStyle(pendingDisplayStyle);
-      window.localStorage.setItem(displayStyleStorageKey, pendingDisplayStyle);
-    }
+    setDisplayStyle(pendingDisplayStyle);
+    window.localStorage.setItem(displayStyleStorageKey, pendingDisplayStyle);
     setDisplayMode(pendingDisplayMode);
     window.localStorage.setItem(displayModeStorageKey, pendingDisplayMode);
 
@@ -1469,6 +1467,7 @@ export function MKTScreen() {
 
     resetSceneControlsVisibility();
     window.dispatchEvent(new Event("mkt-audio-unlock"));
+    event.currentTarget.setPointerCapture(event.pointerId);
     isDragging.current = true;
 
     dragState.current = {
@@ -1488,6 +1487,9 @@ export function MKTScreen() {
     if (drag.hasDragged) suppressImageClickUntil.current = performance.now() + 250;
     dragState.current = null;
     isDragging.current = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   }, []);
 
   const onPointerCancel = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -2198,12 +2200,12 @@ export function MKTScreen() {
     const updateMobileMode = () => {
       const mobile = media.matches;
       setIsMobile(mobile);
-      if (mobile) {
-        setDisplayStyle("list");
-      } else {
-        const storedDisplayStyle = window.localStorage.getItem(displayStyleStorageKey);
-        setDisplayStyle(storedDisplayStyle === "list" || storedDisplayStyle === "art" ? storedDisplayStyle : "museum");
-      }
+      const storedDisplayStyle = window.localStorage.getItem(displayStyleStorageKey);
+      setDisplayStyle(
+        storedDisplayStyle === "list" || storedDisplayStyle === "art"
+          ? storedDisplayStyle
+          : "museum",
+      );
       setIsPresentationReady(true);
     };
     updateMobileMode();
@@ -2454,15 +2456,16 @@ export function MKTScreen() {
   return (
     <div className="sceneRoot">
       <div
-      className={`sceneRoot__content ${displayStyle === "art" ? "is-art-style" : ""} ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
-      onPointerDown={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerDown}
-      onPointerMove={isMobile || (selectedProject && !isDetailMinimized) ? undefined : handleScenePointerMove}
-      onPointerUp={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerUp}
-      onPointerCancel={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerCancel}
-      onPointerLeave={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerLeave}
-      onWheel={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onWheel}
-    >
-      {isPresentationReady && (!selectedProject || isDetailMinimized) && (isMobile || displayStyle === "list") && (
+        className={`sceneRoot__content ${displayStyle === "art" ? "is-art-style" : ""} ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
+        style={{ touchAction: displayStyle === "list" ? undefined : "none" }}
+        onPointerDown={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerDown}
+        onPointerMove={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : handleScenePointerMove}
+        onPointerUp={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerUp}
+        onPointerCancel={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerCancel}
+        onPointerLeave={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerLeave}
+        onWheel={isMobile || displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onWheel}
+      >
+      {isPresentationReady && (!selectedProject || isDetailMinimized) && displayStyle === "list" && (
         <>
           <h1 className={`main-title ${!isMobile ? "list-view-header" : ""}`}>
             <NextImage
@@ -2481,19 +2484,28 @@ export function MKTScreen() {
         </>
       )}
 
-      {isPresentationReady && (!selectedProject || isDetailMinimized) && !isMobile && displayStyle === "art" && (
-        <h1 className="art-style-title">
-          <NextImage
-            src={sitePath("/images/mkt-logo.svg")}
-            alt="MKT"
-            width={3790}
-            height={654}
-            priority
-          />
-        </h1>
+      {isPresentationReady && (!selectedProject || isDetailMinimized) && displayStyle === "art" && (
+        <>
+          <h1 className={isMobile ? "main-title" : "art-style-title"}>
+            <NextImage
+              src={sitePath("/images/mkt-logo.svg")}
+              alt="MKT"
+              width={3790}
+              height={654}
+              priority
+            />
+          </h1>
+          {isMobile && (
+            <div className="mobile-title-blur" aria-hidden="true">
+              {Array.from({ length: 8 }, (_, index) => (
+                <div key={index} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {!isPresentationReady ? null : isMobile || displayStyle === "list" ? (
+      {!isPresentationReady ? null : displayStyle === "list" ? (
         <MKTTrackList
           items={galleryItems}
           onSelect={handleImageClick}
@@ -2520,6 +2532,7 @@ export function MKTScreen() {
           onImageClick={handleImageClick}
           displayMode={displayMode}
           displayStyle={displayStyle}
+          isMobile={isMobile}
           playingTrackIndex={showOverlay && isDetailPlaying && selectedProject ? selectedProject.index : null}
         />
       )}
@@ -2817,37 +2830,35 @@ export function MKTScreen() {
             </header>
 
             <div className="settings-modal__list">
-              {!isMobile && (
-                <div className="settings-modal__row">
-                  <span className="settings-modal__label">Phong Cách</span>
-                  <div className="settings-modal__choices" role="group" aria-label="Phong cách hiển thị">
-                    <button
-                      className={`settings-modal__choice ${pendingDisplayStyle === "museum" ? "is-selected" : ""}`}
-                      type="button"
-                      onClick={() => handleSettingsDisplayStyleChange("museum")}
-                      aria-pressed={pendingDisplayStyle === "museum"}
-                    >
-                      <span>ĐÀI QUAN SÁT</span>
-                    </button>
-                    <button
-                      className={`settings-modal__choice ${pendingDisplayStyle === "art" ? "is-selected" : ""}`}
-                      type="button"
-                      onClick={() => handleSettingsDisplayStyleChange("art")}
-                      aria-pressed={pendingDisplayStyle === "art"}
-                    >
-                      <span>BẢO TÀNG</span>
-                    </button>
-                    <button
-                      className={`settings-modal__choice ${pendingDisplayStyle === "list" ? "is-selected" : ""}`}
-                      type="button"
-                      onClick={() => handleSettingsDisplayStyleChange("list")}
-                      aria-pressed={pendingDisplayStyle === "list"}
-                    >
-                      <span>DANH SÁCH</span>
-                    </button>
-                  </div>
+              <div className="settings-modal__row">
+                <span className="settings-modal__label">Phong Cách</span>
+                <div className="settings-modal__choices" role="group" aria-label="Phong cách hiển thị">
+                  <button
+                    className={`settings-modal__choice ${pendingDisplayStyle === "museum" ? "is-selected" : ""}`}
+                    type="button"
+                    onClick={() => handleSettingsDisplayStyleChange("museum")}
+                    aria-pressed={pendingDisplayStyle === "museum"}
+                  >
+                    <span>ĐÀI QUAN SÁT</span>
+                  </button>
+                  <button
+                    className={`settings-modal__choice ${pendingDisplayStyle === "art" ? "is-selected" : ""}`}
+                    type="button"
+                    onClick={() => handleSettingsDisplayStyleChange("art")}
+                    aria-pressed={pendingDisplayStyle === "art"}
+                  >
+                    <span>BẢO TÀNG</span>
+                  </button>
+                  <button
+                    className={`settings-modal__choice ${pendingDisplayStyle === "list" ? "is-selected" : ""}`}
+                    type="button"
+                    onClick={() => handleSettingsDisplayStyleChange("list")}
+                    aria-pressed={pendingDisplayStyle === "list"}
+                  >
+                    <span>DANH SÁCH</span>
+                  </button>
                 </div>
-              )}
+              </div>
 
               <div className="settings-modal__row">
                 <span className="settings-modal__label">Hiển Thị</span>

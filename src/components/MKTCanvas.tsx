@@ -297,13 +297,18 @@ function CanvasPlayingIndicator({
   );
 }
 
-function MKTTitle() {
+function MKTTitle({ isMobile }: { isMobile: boolean }) {
   return (
-    <DreiImage url={sitePath("/images/mkt-logo.svg")} scale={[4.4, 0.76]} transparent toneMapped={false} />
+    <DreiImage
+      url={sitePath("/images/mkt-logo.svg")}
+      scale={isMobile ? [2.8, 0.48] : [4.4, 0.76]}
+      transparent
+      toneMapped={false}
+    />
   );
 }
 
-function SceneCamera({ displayStyle }: { displayStyle: DisplayStyle }) {
+function SceneCamera({ displayStyle, isMobile }: { displayStyle: DisplayStyle; isMobile: boolean }) {
   const { camera } = useThree();
   const perspectiveCamera = camera as PerspectiveCamera;
   const previousStyleRef = useRef<DisplayStyle | null>(null);
@@ -335,8 +340,8 @@ function SceneCamera({ displayStyle }: { displayStyle: DisplayStyle }) {
   }, [camera, displayStyle]);
 
   useFrame((_, delta) => {
-    const targetZ = displayStyle === "art" ? 0.85 : 6;
-    const targetFov = displayStyle === "art" ? 62 : 50;
+    const targetZ = displayStyle === "art" ? 0.85 : isMobile ? 7 : 6;
+    const targetFov = displayStyle === "art" ? (isMobile ? 70 : 62) : isMobile ? 55 : 50;
     const transition = transitionRef.current;
     const duration = transition.kind === "initial" ? 1.8 : 1.45;
     transition.elapsed = Math.min(duration, transition.elapsed + delta);
@@ -891,6 +896,7 @@ export function MKTCanvas({
   onImageClick,
   displayMode,
   displayStyle,
+  isMobile,
   playingTrackIndex,
 }: {
   items: readonly GalleryItem[];
@@ -907,22 +913,23 @@ export function MKTCanvas({
   onImageClick: (projectName: string, imageUrl: string, textureIndex: number) => void;
   displayMode: DisplayMode;
   displayStyle: DisplayStyle;
+  isMobile: boolean;
   playingTrackIndex: number | null;
 }) {
   return (
     <Canvas
       camera={{ position: [0, 0, 14], fov: 42 }}
       gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
-      dpr={[1, 2]}
+      dpr={isMobile ? [1, 1.5] : [1, 2]}
       frameloop="always"
       onCreated={({ camera, gl }) => {
         camera.lookAt(0, 0, 0);
         gl.setClearColor(0x000000, 0);
       }}
     >
-      <SceneCamera displayStyle={displayStyle} />
+      <SceneCamera displayStyle={displayStyle} isMobile={isMobile} />
       <Suspense fallback={null}>
-        {displayStyle !== "art" && <MKTTitle />}
+        {displayStyle !== "art" && <MKTTitle isMobile={isMobile} />}
         <ImageTube
           items={items}
           tubeCols={tubeCols}
