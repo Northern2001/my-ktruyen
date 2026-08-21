@@ -1450,6 +1450,9 @@ export function MKTScreen() {
 
     if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 8) {
       drag.hasDragged = true;
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
       suppressImageClickUntil.current = performance.now() + 250;
     }
   }, [displayStyle]);
@@ -1467,7 +1470,6 @@ export function MKTScreen() {
 
     resetSceneControlsVisibility();
     window.dispatchEvent(new Event("mkt-audio-unlock"));
-    event.currentTarget.setPointerCapture(event.pointerId);
     isDragging.current = true;
 
     dragState.current = {
