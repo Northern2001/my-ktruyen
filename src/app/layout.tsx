@@ -3,6 +3,7 @@ import "./globals.css";
 import { GlobalSound } from "../components/GlobalSound";
 import { AppMenu } from "../components/AppMenu";
 import { BirthdayIntro } from "../components/BirthdayIntro";
+import { ThemeAtmosphere } from "../components/ThemeAtmosphere";
 import { sitePath } from "../lib/site-path";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -44,7 +45,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#080808",
+  themeColor: "#090714",
 };
 
 export default function RootLayout({
@@ -80,6 +81,7 @@ export default function RootLayout({
         `}</style>
       </head>
       <body>
+        <ThemeAtmosphere />
         <GlobalSound />
         <BirthdayIntro />
         <div id="site-content" className="site-content">

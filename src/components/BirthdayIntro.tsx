@@ -10,7 +10,7 @@ const birthdayGateKey = "mkt-birthday-preview-unlocked-2026";
 const birthdayPassword = "emyeuanhphuongbac";
 const birthdayUnlockAt = Date.UTC(2026, 7, 25, 17);
 
-type IntroScene = "wish" | "cake";
+type IntroScene = "wish" | "cake" | "contents";
 type GateStatus = "checking" | "locked" | "unlocking" | "unlocked";
 type MicrophoneState = "idle" | "requesting" | "listening" | "unavailable";
 
@@ -309,6 +309,7 @@ export function BirthdayIntro() {
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const blowButtonRef = useRef<HTMLButtonElement>(null);
   const enterButtonRef = useRef<HTMLButtonElement>(null);
+  const siteButtonRef = useRef<HTMLButtonElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -448,6 +449,13 @@ export function BirthdayIntro() {
     setScene("cake");
   };
 
+  const handleShowContents = () => {
+    playClickSound();
+    fireworksCleanupRef.current?.();
+    fireworksCleanupRef.current = null;
+    setScene("contents");
+  };
+
   const handleReplay = () => {
     playClickSound();
     window.clearTimeout(blowTimerRef.current);
@@ -561,10 +569,12 @@ export function BirthdayIntro() {
 
     const button = scene === "wish"
       ? openButtonRef.current
-      : isBlown
-        ? enterButtonRef.current
-        : blowButtonRef.current;
-    const focusFrame = window.requestAnimationFrame(() => button?.focus());
+      : scene === "contents"
+        ? siteButtonRef.current
+        : isBlown
+          ? enterButtonRef.current
+          : blowButtonRef.current;
+    const focusFrame = window.requestAnimationFrame(() => button?.focus({ preventScroll: true }));
     return () => window.cancelAnimationFrame(focusFrame);
   }, [gateStatus, isBlown, isVisible, scene]);
 
@@ -832,15 +842,102 @@ export function BirthdayIntro() {
           ref={enterButtonRef}
           className={`${styles.primaryButton} ${styles.enterButton}`}
           type="button"
-          onClick={closeIntro}
+          onClick={handleShowContents}
           aria-hidden={!isBlown}
           tabIndex={isGateOpen && scene === "cake" && isBlown ? 0 : -1}
         >
-          <span>Vào kỷ niệm của chúng mình</span>
+          <span>Xem bên trong món quà</span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M5 12h14m-5-5 5 5-5 5" />
           </svg>
         </button>
+      </div>
+
+      <div className={styles.contentsScene} aria-hidden={!isGateOpen || scene !== "contents"}>
+        <div className={styles.contentsPhoto} aria-hidden="true">
+          <Image
+            src={sitePath("/images/mkt/IMG_3259.jpg")}
+            alt=""
+            fill
+            sizes="100vw"
+            loading="eager"
+          />
+        </div>
+        <div className={styles.contentsShade} aria-hidden="true" />
+
+        <div className={styles.contentsLayout}>
+          <div className={styles.contentsHeading}>
+            <p className={styles.eyebrow}>TRƯỚC KHI EM MỞ QUÀ</p>
+            <h2>
+              Trong này có ba cách
+              <span>để anh ở gần em hơn.</span>
+            </h2>
+          </div>
+
+          <div className={styles.giftList}>
+            <article className={styles.giftItem}>
+              <div className={styles.giftMeta}>
+                <span>01</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" />
+                  <circle cx="12" cy="12" r="2" />
+                  <path d="M12 4v3M20 12h-3" />
+                </svg>
+              </div>
+              <h3>Album</h3>
+              <p>
+                Phần này anh làm riêng cho em, để em nghe những bài em thích bất cứ lúc nào mà không
+                cần phải chờ quảng cáo.
+              </p>
+            </article>
+
+            <article className={styles.giftItem}>
+              <div className={styles.giftMeta}>
+                <span>02</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="16" rx="1" />
+                  <circle cx="9" cy="10" r="2" />
+                  <path d="m4 18 5-5 4 4 2-2 5 4" />
+                </svg>
+              </div>
+              <h3>Memory</h3>
+              <p>
+                Đây là những hình ảnh từ những lần anh và em gặp nhau, những khoảnh khắc anh vẫn giữ
+                trong điện thoại. Lúc nào nhớ anh, em mở ra xem nhé.
+              </p>
+            </article>
+
+            <article className={styles.giftItem}>
+              <div className={styles.giftMeta}>
+                <span>03</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 12v2M8 8v8M12 5v14M16 8v8M20 11v3" />
+                </svg>
+              </div>
+              <h3>MP3</h3>
+              <p>
+                Đây sẽ là những đoạn voice của anh, để những lúc nhớ giọng anh em vẫn có thể nghe thấy
+                anh ở bên.
+              </p>
+            </article>
+          </div>
+
+          <div className={styles.contentsFooter}>
+            <p>Một món quà nhỏ, dành cho những ngày mình phải ở xa nhau.</p>
+            <button
+              ref={siteButtonRef}
+              className={`${styles.primaryButton} ${styles.contentsButton}`}
+              type="button"
+              onClick={closeIntro}
+              tabIndex={isGateOpen && scene === "contents" ? 0 : -1}
+            >
+              <span>Bắt đầu khám phá</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );
