@@ -1,7 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from "react";
 import { sitePath } from "../lib/site-path";
 
 type MemoryMediaType = "image" | "video";
@@ -26,7 +35,30 @@ type MemoryManifest = {
 
 type MemoryFilter = "all" | MemoryMediaType;
 
+type TablePoint = {
+  x: number;
+  y: number;
+};
+
+type TablePlacement = TablePoint & {
+  rotation: number;
+  width: number;
+  zIndex: number;
+};
+
 const manifestUrl = sitePath("/memory-media/manifest.json");
+const tableCellWidth = 330;
+const tableCellHeight = 390;
+const placementVariation = [
+  { x: -8, y: 16, rotation: -4.2, width: 1.02 },
+  { x: 18, y: -6, rotation: 2.7, width: 0.94 },
+  { x: -14, y: 4, rotation: -1.4, width: 1.08 },
+  { x: 10, y: 22, rotation: 4.6, width: 0.98 },
+  { x: -20, y: -12, rotation: 1.8, width: 1.04 },
+  { x: 6, y: 10, rotation: -3.1, width: 0.92 },
+  { x: 20, y: 0, rotation: 3.5, width: 1.06 },
+  { x: -4, y: 20, rotation: -2.2, width: 1 },
+] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit",
@@ -48,6 +80,33 @@ function formatDuration(durationMs: number | null) {
   return `${minutes}:${seconds}`;
 }
 
+function getTableDimensions(itemCount: number) {
+  const columns = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(Math.max(itemCount, 1) * 1.7))));
+  const rows = Math.max(1, Math.ceil(itemCount / columns));
+
+  return {
+    columns,
+    width: 180 + columns * tableCellWidth,
+    height: 190 + rows * tableCellHeight,
+  };
+}
+
+function getTablePlacement(item: MemoryItem, index: number, columns: number): TablePlacement {
+  const column = index % columns;
+  const row = Math.floor(index / columns);
+  const variation = placementVariation[index % placementVariation.length];
+  const isPortrait = Boolean(item.width && item.height && item.height > item.width);
+  const baseWidth = isPortrait ? 214 : 278;
+
+  return {
+    x: 92 + column * tableCellWidth + variation.x,
+    y: 86 + row * tableCellHeight + variation.y,
+    rotation: variation.rotation,
+    width: Math.round(baseWidth * variation.width),
+    zIndex: 2 + ((index * 7) % 9),
+  };
+}
+
 async function readMemoryItems(signal?: AbortSignal) {
   const response = await fetch(manifestUrl, { cache: "no-store", signal });
   if (!response.ok) throw new Error(`Không thể đọc danh sách Memory (${response.status}).`);
@@ -65,9 +124,23 @@ export function MemoryGallery() {
   const [items, setItems] = useState<MemoryItem[]>([]);
   const [filter, setFilter] = useState<MemoryFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [liftingId, setLiftingId] = useState<string | null>(null);
+  const [pan, setPan] = useState<TablePoint>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const tableViewportRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    originX: number;
+    originY: number;
+    panX: number;
+    panY: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
+  const liftTimerRef = useRef<number | null>(null);
 
   const loadItems = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -102,6 +175,10 @@ export function MemoryGallery() {
     () => filter === "all" ? items : items.filter((item) => item.type === filter),
     [filter, items],
   );
+  const tableDimensions = useMemo(
+    () => getTableDimensions(filteredItems.length),
+    [filteredItems.length],
+  );
   const selectedIndex = filteredItems.findIndex((item) => item.id === selectedId);
   const selectedItem = selectedIndex >= 0 ? filteredItems[selectedIndex] : null;
   const imageCount = items.filter((item) => item.type === "image").length;
@@ -112,6 +189,104 @@ export function MemoryGallery() {
     const nextIndex = (selectedIndex + offset + filteredItems.length) % filteredItems.length;
     setSelectedId(filteredItems[nextIndex].id);
   }, [filteredItems, selectedIndex]);
+
+  const clampPan = useCallback((point: TablePoint) => {
+    const viewport = tableViewportRef.current;
+    if (!viewport) return point;
+
+    return {
+      x: Math.min(0, Math.max(viewport.clientWidth - tableDimensions.width, point.x)),
+      y: Math.min(0, Math.max(viewport.clientHeight - tableDimensions.height, point.y)),
+    };
+  }, [tableDimensions.height, tableDimensions.width]);
+
+  const resetTable = useCallback(() => {
+    setPan({ x: 0, y: 0 });
+    tableViewportRef.current?.scrollTo({ top: 0, left: 0 });
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setPan((currentPan) => clampPan(currentPan));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [clampPan]);
+
+  useEffect(() => () => {
+    if (liftTimerRef.current !== null) window.clearTimeout(liftTimerRef.current);
+  }, []);
+
+  const canPanTable = () => !window.matchMedia("(pointer: coarse), (max-width: 700px)").matches;
+
+  const handleTablePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || !canPanTable()) return;
+
+    dragRef.current = {
+      pointerId: event.pointerId,
+      originX: event.clientX,
+      originY: event.clientY,
+      panX: pan.x,
+      panY: pan.y,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsPanning(true);
+  };
+
+  const handleTablePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.originX;
+    const deltaY = event.clientY - drag.originY;
+    if (Math.hypot(deltaX, deltaY) > 5) drag.moved = true;
+    setPan(clampPan({ x: drag.panX + deltaX, y: drag.panY + deltaY }));
+  };
+
+  const finishTablePointer = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    suppressClickRef.current = drag.moved;
+    if (drag.moved) {
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+    dragRef.current = null;
+    setIsPanning(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  const handleTableWheel = (event: ReactWheelEvent<HTMLElement>) => {
+    if (!canPanTable()) return;
+    event.preventDefault();
+    setPan((currentPan) => clampPan({
+      x: currentPan.x - (event.shiftKey ? event.deltaY : event.deltaX),
+      y: currentPan.y - (event.shiftKey ? event.deltaX : event.deltaY),
+    }));
+  };
+
+  const openItem = (item: MemoryItem) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+
+    if (liftTimerRef.current !== null) window.clearTimeout(liftTimerRef.current);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setSelectedId(item.id);
+      return;
+    }
+
+    setLiftingId(item.id);
+    liftTimerRef.current = window.setTimeout(() => {
+      setSelectedId(item.id);
+      setLiftingId(null);
+      liftTimerRef.current = null;
+    }, 240);
+  };
 
   useEffect(() => {
     if (!selectedItem) return;
@@ -137,7 +312,7 @@ export function MemoryGallery() {
     <main className="memory-page">
       <header className="memory-page__header">
         <div className="memory-page__heading">
-          <span className="memory-page__eyebrow">MKT / LOCAL ARCHIVE</span>
+          <span className="memory-page__eyebrow">MKT / MEMORY TABLE</span>
           <h1>Memory</h1>
         </div>
 
@@ -152,7 +327,10 @@ export function MemoryGallery() {
                 key={value}
                 className={filter === value ? "is-active" : ""}
                 type="button"
-                onClick={() => setFilter(value)}
+                onClick={() => {
+                  setFilter(value);
+                  resetTable();
+                }}
                 aria-pressed={filter === value}
               >
                 <span>{label}</span>
@@ -160,14 +338,28 @@ export function MemoryGallery() {
               </button>
             ))}
           </div>
+          <button
+            className="memory-page__reset"
+            type="button"
+            onClick={resetTable}
+            aria-label="Đưa mặt bàn về vị trí đầu"
+            title="Về vị trí đầu"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4H4v5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+              <circle cx="12" cy="12" r="2.5" />
+            </svg>
+          </button>
         </div>
       </header>
 
       {isLoading ? (
-        <section className="memory-grid" aria-label="Đang tải kỷ niệm" aria-busy="true">
-          {Array.from({ length: 10 }, (_, index) => (
-            <span className="memory-card memory-card--loading" key={index} />
-          ))}
+        <section className="memory-table__viewport memory-table__viewport--loading" aria-label="Đang tải kỷ niệm" aria-busy="true">
+          <div className="memory-table__loading-group">
+            {Array.from({ length: 6 }, (_, index) => (
+              <span className="memory-table__loading-card" key={index} />
+            ))}
+          </div>
         </section>
       ) : error ? (
         <section className="memory-page__status" role="alert">
@@ -183,49 +375,101 @@ export function MemoryGallery() {
           <p>Không tìm thấy {filter === "image" ? "ảnh" : filter === "video" ? "video" : "ảnh hoặc video"} trong thư mục.</p>
         </section>
       ) : (
-        <section className="memory-grid" aria-label="Danh sách kỷ niệm">
-          {filteredItems.map((item, index) => {
-            const duration = formatDuration(item.durationMs);
-            const aspectRatio = item.width && item.height
-              ? `${Math.max(item.width, 1)} / ${Math.max(item.height, 1)}`
-              : "4 / 3";
+        <section
+          ref={tableViewportRef}
+          className={`memory-table__viewport ${isPanning ? "is-panning" : ""}`}
+          aria-label="Mặt bàn ký ức"
+          tabIndex={0}
+          onPointerDown={handleTablePointerDown}
+          onPointerMove={handleTablePointerMove}
+          onPointerUp={finishTablePointer}
+          onPointerCancel={finishTablePointer}
+          onWheel={handleTableWheel}
+          onKeyDown={(event) => {
+            if (event.target !== event.currentTarget) return;
+            const movement: Record<string, TablePoint> = {
+              ArrowLeft: { x: 90, y: 0 },
+              ArrowRight: { x: -90, y: 0 },
+              ArrowUp: { x: 0, y: 90 },
+              ArrowDown: { x: 0, y: -90 },
+            };
+            if (event.key === "Home") {
+              event.preventDefault();
+              resetTable();
+            } else if (movement[event.key]) {
+              event.preventDefault();
+              const delta = movement[event.key];
+              setPan((currentPan) => clampPan({
+                x: currentPan.x + delta.x,
+                y: currentPan.y + delta.y,
+              }));
+            }
+          }}
+        >
+          <div
+            className="memory-table__world"
+            style={{
+              width: tableDimensions.width,
+              height: tableDimensions.height,
+              transform: `translate3d(${pan.x}px, ${pan.y}px, 0)`,
+            }}
+          >
+            <span className="memory-table__folio" aria-hidden="true">AUG / 2026</span>
+            <span className="memory-table__count" aria-hidden="true">
+              {String(filteredItems.length).padStart(2, "0")} MOMENTS
+            </span>
 
-            return (
-              <button
-                className="memory-card"
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedId(item.id)}
-                aria-label={`Mở ${item.type === "video" ? "video" : "ảnh"} ${item.name}`}
-              >
-                <span className="memory-card__media" style={{ aspectRatio }}>
-                  {item.thumbnailUrl ? (
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                      loading={index < 4 ? "eager" : "lazy"}
-                      unoptimized
-                    />
-                  ) : item.type === "video" ? (
-                    <video src={item.mediaUrl} muted playsInline preload="metadata" aria-hidden="true" />
-                  ) : null}
-                  {item.type === "video" && (
-                    <span className="memory-card__play" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="m9 7 8 5-8 5z" /></svg>
-                    </span>
-                  )}
-                  <span className="memory-card__number">{String(index + 1).padStart(2, "0")}</span>
-                  {duration && <span className="memory-card__duration">{duration}</span>}
-                </span>
-                <span className="memory-card__caption">
-                  <span className="memory-card__name">{item.name}</span>
-                  <time dateTime={item.createdTime ?? undefined}>{formatDate(item.createdTime)}</time>
-                </span>
-              </button>
-            );
-          })}
+            {filteredItems.map((item, index) => {
+              const duration = formatDuration(item.durationMs);
+              const aspectRatio = item.width && item.height
+                ? `${Math.max(item.width, 1)} / ${Math.max(item.height, 1)}`
+                : "4 / 3";
+              const placement = getTablePlacement(item, index, tableDimensions.columns);
+              const itemStyle = {
+                "--memory-x": `${placement.x}px`,
+                "--memory-y": `${placement.y}px`,
+                "--memory-rotation": `${placement.rotation}deg`,
+                "--memory-width": `${placement.width}px`,
+                "--memory-z": placement.zIndex,
+              } as CSSProperties;
+
+              return (
+                <button
+                  className={`memory-table__item ${liftingId === item.id ? "is-lifting" : ""}`}
+                  style={itemStyle}
+                  key={item.id}
+                  type="button"
+                  onClick={() => openItem(item)}
+                  aria-label={`Mở ${item.type === "video" ? "video" : "ảnh"} Memory ${String(index + 1).padStart(2, "0")}, ${formatDate(item.createdTime)}`}
+                >
+                  <span className="memory-table__media" style={{ aspectRatio }}>
+                    {item.thumbnailUrl ? (
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt=""
+                        fill
+                        sizes="(max-width: 700px) 50vw, 300px"
+                        loading={index < 6 ? "eager" : "lazy"}
+                        unoptimized
+                      />
+                    ) : item.type === "video" ? (
+                      <video src={item.mediaUrl} muted playsInline preload="metadata" aria-hidden="true" />
+                    ) : null}
+                    {item.type === "video" && (
+                      <span className="memory-card__play" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="m9 7 8 5-8 5z" /></svg>
+                      </span>
+                    )}
+                    {duration && <span className="memory-table__duration">{duration}</span>}
+                  </span>
+                  <span className="memory-table__caption">
+                    <span>Memory {String(index + 1).padStart(2, "0")}</span>
+                    <time dateTime={item.createdTime ?? undefined}>{formatDate(item.createdTime)}</time>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </section>
       )}
 
@@ -241,7 +485,7 @@ export function MemoryGallery() {
         >
           <header className="memory-viewer__header">
             <div>
-              <strong>{selectedItem.name}</strong>
+              <strong>Memory {String(selectedIndex + 1).padStart(2, "0")}</strong>
               <span>{formatDate(selectedItem.createdTime)} / {selectedItem.type === "video" ? "VIDEO" : "IMAGE"}</span>
             </div>
             <button

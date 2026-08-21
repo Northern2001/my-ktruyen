@@ -6,13 +6,13 @@ import type { Mp3Track } from "../../components/Mp3Library";
 import { sitePath } from "../../lib/site-path";
 
 export const metadata: Metadata = {
-  title: "MP3 / MKT",
-  description: "Danh sách MP3 của MKT",
+  title: "Voice Notes / MKT",
+  description: "Những lá thư được MKT giữ lại bằng giọng nói.",
 };
 
 type TrackDetails = Pick<Mp3Track, "title" | "artist" | "imageUrl"> & {
   order: number;
-};
+} & Partial<Pick<Mp3Track, "mood" | "note" | "recordedAt">>;
 
 const trackDetails: Record<string, TrackDetails> = {
   "SOS.mp3": { order: 0, title: "SOS", artist: "ZIK, 邹沛沛", imageUrl: "/images/mkt/IMG_3259.jpg" },
@@ -68,6 +68,9 @@ async function getMp3Tracks(): Promise<Mp3Track[]> {
       artist: details.artist,
       imageUrl: sitePath(details.imageUrl),
       order: details.order,
+      mood: details.mood,
+      note: details.note,
+      recordedAt: details.recordedAt,
     };
   }));
 
