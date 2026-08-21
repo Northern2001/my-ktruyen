@@ -2607,7 +2607,7 @@ export function MKTScreen() {
 
       {isMobile && hasConfirmedAge && !isAgeGateOpen && (
         <button
-          className="mobile-header-settings"
+          className={`mobile-header-settings ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
           type="button"
           onClick={handleSettingsOpen}
           onPointerDown={(event) => event.stopPropagation()}

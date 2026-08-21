@@ -4231,6 +4231,14 @@ body {
     cursor: pointer;
   }
 
+  .mobile-header-settings.is-detail-open {
+    top: max(8px, env(safe-area-inset-top));
+    right: 66px;
+    z-index: 140;
+    width: 46px;
+    height: 46px;
+  }
+
   .mobile-header-settings svg {
     display: block;
     width: 22px;

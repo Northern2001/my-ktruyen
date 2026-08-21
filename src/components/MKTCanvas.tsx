@@ -124,9 +124,8 @@ function ItemCaption({
   const durationSeconds = item.durationSeconds;
   const trackNumberLabel = getTrackLabel(item.numberTrack);
   const trackNumberWidth = trackNumberLabel.length * 0.0264;
-  const isTrackEight = isDarkTrackNumber(item.numberTrack);
-  const trackNumberColor = isTrackEight ? "#080808" : "#ffffff";
-  const captionColor = isTrackEight ? "#080808" : "#ffffff";
+  const metadataColor = isDarkTrackNumber(item.numberTrack) ? "#080808" : "#ffffff";
+  const captionColor = "#080808";
   const captionShadowOffsetX = "1.5%";
   const captionShadowOffsetY = "-2.5%";
   const captionShadowBlur = "3%";
@@ -139,7 +138,7 @@ function ItemCaption({
         raycast={() => {}}
         anchorX="left"
         anchorY="top"
-        color={trackNumberColor}
+        color={metadataColor}
         fontSize={0.04}
         lineHeight={1}
         maxWidth={width}
@@ -164,7 +163,7 @@ function ItemCaption({
             raycast={() => {}}
             anchorX="left"
             anchorY="top"
-            color={captionColor}
+            color={metadataColor}
             fontSize={0.04}
             lineHeight={1}
             letterSpacing={0.06}
@@ -186,7 +185,7 @@ function ItemCaption({
             raycast={() => {}}
             anchorX="left"
             anchorY="top"
-            color={captionColor}
+            color={metadataColor}
             fontSize={0.04}
             lineHeight={1}
             letterSpacing={0.06}
