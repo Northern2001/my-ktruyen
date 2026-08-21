@@ -1,0 +1,12 @@
+<svg width="3790" height="654" viewBox="253 58 3790 654" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_mkt)">
+<path transform="translate(632.00 672.76) scale(0.81059 -0.81059)" d="M257 98 174 448V0H44V710H204L300 334L396 710H556V0H426V448L343 98Z" fill="#762326"/>
+<path transform="translate(1904.82 672.76) scale(0.81059 -0.81059)" d="M48 0V710H190V420L392 710H562L334 400L566 0H410L251 287L190 205V0Z" fill="#762326"/>
+<path transform="translate(3177.65 672.76) scale(0.81059 -0.81059)" d="M229 0V582H40V710H560V582H371V0Z" fill="#762326"/>
+</g>
+<defs>
+<clipPath id="clip0_mkt">
+<rect width="3790" height="654" fill="white" transform="translate(253 58)"/>
+</clipPath>
+</defs>
+</svg>

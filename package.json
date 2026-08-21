@@ -1,9 +1,11 @@
 {
-  "name": "hvl",
+  "name": "mkt",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/sync-memory.mjs",
     "dev": "BASELINE_BROWSER_MAPPING_IGNORE_OLD_DATA=true next dev",
+    "sync:memory": "node scripts/sync-memory.mjs",
     "build": "BASELINE_BROWSER_MAPPING_IGNORE_OLD_DATA=true next build",
     "start": "next start",
     "lint": "eslint"

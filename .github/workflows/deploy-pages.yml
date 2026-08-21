@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SITE_URL: https://hvl-album.github.io
+      NEXT_PUBLIC_SITE_URL: https://mkt-album.github.io
 
     steps:
       - name: Checkout

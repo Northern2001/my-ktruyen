@@ -1,5 +1,5 @@
-import { HVLScreen } from "../components/HVLScreen";
+import { MKTScreen } from "../components/MKTScreen";
 
 export default function Home() {
-  return <HVLScreen />;
+  return <MKTScreen />;
 }

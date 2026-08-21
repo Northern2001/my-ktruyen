@@ -135,7 +135,10 @@ def main():
         print(f"  {path.relative_to(ROOT)}  {size}x{size}  {path.stat().st_size:,} byte")
 
     # .ico gộp nhiều cỡ; cỡ nhỏ chỉ vẽ chữ đầu cho khỏi bết.
-    frames = [render(s, args.text if s >= 48 else args.text[0]) for s in (16, 32, 48, 64)]
+    frames = [
+        render(s, args.text if s >= 48 else args.text[0]).convert("RGBA")
+        for s in (16, 32, 48, 64)
+    ]
     ico = ROOT / "favicon.ico"
     frames[-1].save(ico, "ICO", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)],
                     append_images=frames[:-1])

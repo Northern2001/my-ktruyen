@@ -149,13 +149,13 @@ export function GlobalSound() {
       if (typeof distance === "number") onScrollMotion(distance);
     };
 
-    window.addEventListener("hvl-click", onClickSound);
-    window.addEventListener("hvl-audio-unlock", unlockScrollAudio);
-    window.addEventListener("hvl-drag-motion", onDragMotion);
+    window.addEventListener("mkt-click", onClickSound);
+    window.addEventListener("mkt-audio-unlock", unlockScrollAudio);
+    window.addEventListener("mkt-drag-motion", onDragMotion);
     return () => {
-      window.removeEventListener("hvl-click", onClickSound);
-      window.removeEventListener("hvl-audio-unlock", unlockScrollAudio);
-      window.removeEventListener("hvl-drag-motion", onDragMotion);
+      window.removeEventListener("mkt-click", onClickSound);
+      window.removeEventListener("mkt-audio-unlock", unlockScrollAudio);
+      window.removeEventListener("mkt-drag-motion", onDragMotion);
       cancelAnimationFrame(rafId);
       scrollAudio.pause();
       scrollAudio.src = "";

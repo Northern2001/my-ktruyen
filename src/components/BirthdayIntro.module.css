@@ -1,0 +1,1040 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #080706;
+  color: #f7f0e7;
+  opacity: 1;
+  transition: opacity 650ms ease, visibility 650ms ease;
+}
+
+.root.exiting {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  opacity: 0.08;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+}
+
+.skipButton,
+.replayButton {
+  position: absolute;
+  z-index: 30;
+  top: max(22px, env(safe-area-inset-top));
+  display: grid;
+  width: 42px;
+  height: 42px;
+  box-sizing: border-box;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(247, 240, 231, 0.26);
+  border-radius: 50%;
+  background: rgba(8, 7, 6, 0.48);
+  color: #f7f0e7;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: border-color 180ms ease, background-color 180ms ease, opacity 240ms ease;
+}
+
+.skipButton {
+  right: max(22px, env(safe-area-inset-right));
+}
+
+.replayButton {
+  left: max(22px, env(safe-area-inset-left));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.root[data-blown="true"] .replayButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.skipButton:hover,
+.replayButton:hover {
+  border-color: #d8bc78;
+  background: rgba(44, 15, 17, 0.82);
+}
+
+.skipButton svg,
+.replayButton svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wishScene,
+.cakeScene {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.018);
+  transition: opacity 760ms ease, visibility 760ms ease, transform 900ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.root[data-scene="wish"] .wishScene,
+.root[data-scene="cake"] .cakeScene {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.wishScene {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  padding: max(76px, env(safe-area-inset-top)) clamp(28px, 6vw, 88px) max(80px, env(safe-area-inset-bottom));
+}
+
+.photo,
+.photoShade {
+  position: absolute;
+  inset: 0;
+}
+
+.photo {
+  z-index: 0;
+  background: #110d0c;
+}
+
+.photo img {
+  object-fit: cover;
+  object-position: center 67%;
+  filter: saturate(0.78) contrast(1.02) brightness(0.84);
+  transform: scale(1.025);
+  animation: photoReveal 6s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.photoShade {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(8, 7, 6, 0.96) 0%, rgba(8, 7, 6, 0.88) 36%, rgba(8, 7, 6, 0.46) 67%, rgba(8, 7, 6, 0.26) 100%),
+    linear-gradient(0deg, rgba(8, 7, 6, 0.84) 0%, transparent 42%, rgba(8, 7, 6, 0.22) 100%);
+}
+
+.wishContent {
+  position: relative;
+  z-index: 2;
+  width: min(660px, 63vw);
+  margin: auto 0;
+  padding: 18px 0;
+}
+
+.eyebrow {
+  margin: 0 0 20px;
+  color: #d8bc78;
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.wishContent h1,
+.cakeCopy h2 {
+  margin: 0;
+  color: #fff8ef;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.wishContent h1 {
+  max-width: 780px;
+  font-size: 72px;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.wishContent h1 span {
+  display: block;
+  color: #e7cfc5;
+  font-style: italic;
+}
+
+.rule {
+  width: 84px;
+  height: 1px;
+  margin: 28px 0 24px;
+  background: #9c3037;
+}
+
+.letter {
+  width: min(590px, 100%);
+  color: rgba(255, 248, 239, 0.86);
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.letter p {
+  margin: 0;
+}
+
+.letter p + p {
+  margin-top: 10px;
+}
+
+.signature {
+  margin: 20px 0 0;
+  color: #fff8ef;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.primaryButton {
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  border: 1px solid rgba(216, 188, 120, 0.5);
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #762326;
+  color: #fff8ef;
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease, opacity 260ms ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  border-color: #d8bc78;
+  background: #8c2c31;
+  transform: translateY(-2px);
+}
+
+.primaryButton:disabled {
+  cursor: wait;
+}
+
+.primaryButton:focus-visible,
+.skipButton:focus-visible,
+.replayButton:focus-visible {
+  outline: 2px solid #fff8ef;
+  outline-offset: 3px;
+}
+
+.primaryButton svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wishScene > .primaryButton {
+  position: absolute;
+  z-index: 3;
+  right: clamp(28px, 6vw, 88px);
+  bottom: max(38px, env(safe-area-inset-bottom));
+}
+
+.cakeScene {
+  display: block;
+  background: #080706;
+  overflow: hidden;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #080706;
+  background-image:
+    radial-gradient(circle at 12% 17%, rgba(242, 214, 143, 0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 82% 23%, rgba(205, 70, 75, 0.75) 0 1px, transparent 2px),
+    radial-gradient(circle at 68% 76%, rgba(182, 207, 218, 0.62) 0 1px, transparent 2px),
+    radial-gradient(circle at 24% 82%, rgba(242, 214, 143, 0.45) 0 1px, transparent 2px);
+  background-size: 97px 113px, 131px 149px, 173px 157px, 211px 197px;
+  opacity: 0.52;
+}
+
+.fireworks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 420ms ease;
+}
+
+.root[data-blown="true"] .fireworks {
+  opacity: 1;
+}
+
+.candlelight {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 3vw;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(221, 151, 63, 0.23) 0 8%, rgba(139, 42, 47, 0.12) 31%, transparent 68%);
+  opacity: 0.92;
+  transform: translateY(-52%);
+  transition: opacity 900ms ease, transform 1.2s ease;
+}
+
+.root[data-blowing="true"] .candlelight {
+  opacity: 0.42;
+  transform: translateY(-52%) scale(0.94);
+}
+
+.root[data-blown="true"] .candlelight {
+  opacity: 0.1;
+  transform: translateY(-52%) scale(1.15);
+}
+
+.cakeCopy,
+.finalCopy {
+  position: absolute;
+  z-index: 5;
+  top: clamp(88px, 15vh, 156px);
+  left: clamp(28px, 7vw, 100px);
+  width: min(39vw, 500px);
+  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.cakeCopy h2 {
+  font-size: 58px;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.finalCopy {
+  top: 50%;
+  opacity: 0;
+  transform: translateY(calc(-50% + 20px));
+  pointer-events: none;
+}
+
+.finalCopy strong {
+  display: block;
+  color: #fff8ef;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.finalCopy p {
+  max-width: 480px;
+  margin: 20px 0 0;
+  color: rgba(255, 248, 239, 0.78);
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.root[data-blown="true"] .cakeCopy {
+  opacity: 0;
+  transform: translateY(-18px);
+}
+
+.root[data-blown="true"] .finalCopy {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+.cakeVisual {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  right: clamp(46px, 9vw, 144px);
+  width: 370px;
+  height: 370px;
+  transform: translateY(-45%) scale(1.08);
+  transform-origin: center;
+}
+
+.cakeVisual::after {
+  position: absolute;
+  right: 12%;
+  bottom: 4px;
+  left: 12%;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.62);
+  filter: blur(15px);
+  content: "";
+}
+
+.cake {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  transform-origin: center bottom;
+}
+
+.tier {
+  position: absolute;
+  border-radius: 48% / 16%;
+}
+
+.tier::before {
+  position: absolute;
+  z-index: 2;
+  top: -14px;
+  right: 0;
+  left: 0;
+  height: 34px;
+  border-radius: 50%;
+  content: "";
+}
+
+.bottomTier {
+  z-index: 2;
+  right: 4%;
+  bottom: 48px;
+  left: 4%;
+  height: 118px;
+  overflow: visible;
+  background: linear-gradient(90deg, #3f0d14 0%, #842b34 18%, #631923 48%, #8e3138 76%, #3b0b12 100%);
+  box-shadow: inset 0 -18px 28px rgba(27, 2, 7, 0.36), 0 30px 52px rgba(0, 0, 0, 0.48);
+}
+
+.bottomTier::before {
+  background: radial-gradient(ellipse at 50% 35%, #aa4248 0%, #7d252e 48%, #461018 100%);
+  box-shadow: inset 0 3px 0 rgba(248, 220, 166, 0.18), 0 5px 12px rgba(0, 0, 0, 0.24);
+}
+
+.topTier {
+  z-index: 4;
+  right: 18%;
+  bottom: 151px;
+  left: 18%;
+  height: 88px;
+  overflow: visible;
+  background: linear-gradient(90deg, #cbb99d 0%, #f5ead7 17%, #ddceb8 56%, #f7ecdb 80%, #b7a386 100%);
+  box-shadow: inset 0 -14px 22px rgba(85, 53, 35, 0.18), 0 18px 28px rgba(0, 0, 0, 0.3);
+}
+
+.topTier::before {
+  border: 1px solid rgba(198, 169, 105, 0.72);
+  background: radial-gradient(ellipse at 48% 30%, #fff8ed 0%, #eadbc4 62%, #bca689 100%);
+  box-shadow: 0 7px 0 #b9914e, 0 12px 20px rgba(0, 0, 0, 0.18);
+}
+
+.ribbon {
+  position: absolute;
+  z-index: 3;
+  top: 44px;
+  right: 1%;
+  left: 1%;
+  height: 20px;
+  background: linear-gradient(90deg, #9d7738, #e2c477 22%, #b58d46 48%, #f0d890 72%, #8e682f);
+  box-shadow: 0 1px 0 rgba(255, 247, 218, 0.4), 0 5px 12px rgba(30, 4, 8, 0.28);
+}
+
+.plaque {
+  position: absolute;
+  z-index: 5;
+  top: 27px;
+  left: 50%;
+  width: 90px;
+  height: 54px;
+  border: 2px solid #c6a969;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f5ead7;
+  box-shadow: 0 8px 18px rgba(35, 4, 9, 0.32), inset 0 0 0 3px rgba(118, 35, 38, 0.08);
+  color: #651921;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  transform: translateX(-50%);
+}
+
+.drip {
+  position: absolute;
+  z-index: 4;
+  top: 7px;
+  width: 14px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(#c6a969, #a67b38);
+  box-shadow: inset 2px 0 rgba(255, 241, 185, 0.28);
+}
+
+.dripOne {
+  left: 17%;
+  height: 29px;
+}
+
+.dripTwo {
+  left: 47%;
+  height: 18px;
+}
+
+.dripThree {
+  right: 16%;
+  height: 36px;
+}
+
+.plate {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 24px;
+  left: 0;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 32%, #f1dfb4 0 36%, #b7924f 38% 55%, #72531f 72%, #21180b 100%);
+  box-shadow: 0 15px 22px rgba(0, 0, 0, 0.42);
+}
+
+.candle {
+  position: absolute;
+  z-index: 8;
+  bottom: 240px;
+  width: 11px;
+  height: 64px;
+  border-radius: 3px 3px 1px 1px;
+  background: repeating-linear-gradient(45deg, #f7e6bc 0 6px, #8b2a2f 6px 12px);
+  box-shadow: inset 2px 0 rgba(255, 255, 255, 0.34), 0 3px 7px rgba(0, 0, 0, 0.26);
+  transform-origin: bottom center;
+}
+
+.candleOne {
+  left: 35%;
+  height: 62px;
+}
+
+.candleTwo {
+  left: calc(50% - 5px);
+  height: 76px;
+}
+
+.candleThree {
+  right: 35%;
+  height: 66px;
+}
+
+.flame {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  width: 19px;
+  height: 32px;
+  border-radius: 62% 38% 58% 42% / 68% 54% 46% 32%;
+  background: linear-gradient(to top, #f07b35 0%, #ffd76d 46%, #fff9c9 100%);
+  box-shadow: 0 0 10px #ffe29a, 0 0 26px #d87538, 0 0 64px rgba(216, 117, 56, 0.7);
+  transform: translateX(-50%) rotate(4deg);
+  transform-origin: center bottom;
+  animation: flameFlicker 680ms ease-in-out infinite alternate;
+  transition: opacity 260ms ease, transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.flame::after {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 7px;
+  height: 14px;
+  border-radius: 60% 40% 55% 45%;
+  background: #fffde4;
+  transform: translateX(-50%);
+  content: "";
+}
+
+.smoke {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  width: 24px;
+  height: 76px;
+  border-left: 2px solid rgba(205, 215, 219, 0.72);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(0.4px);
+  transform: translateX(-50%) scaleY(0.2);
+  transform-origin: center bottom;
+}
+
+.smoke::after {
+  position: absolute;
+  top: 18px;
+  left: 7px;
+  width: 18px;
+  height: 46px;
+  border-right: 1px solid rgba(184, 199, 205, 0.48);
+  border-radius: 50%;
+  content: "";
+}
+
+.root[data-blowing="true"] .flame {
+  animation-duration: 160ms;
+  transform: translateX(4px) rotate(48deg) scale(0.72, 1.08);
+}
+
+.root[data-blown="true"] .flame {
+  opacity: 0;
+  animation: none;
+  transform: translateX(13px) rotate(76deg) scale(0.08);
+}
+
+.root[data-blown="true"] .smoke {
+  animation: smokeRise 2.8s ease-out forwards;
+}
+
+.root[data-blown="true"] .candleTwo .smoke {
+  animation-delay: 90ms;
+}
+
+.root[data-blown="true"] .candleThree .smoke {
+  animation-delay: 160ms;
+}
+
+.wind {
+  position: absolute;
+  z-index: 9;
+  top: 108px;
+  left: -34%;
+  width: 78%;
+  height: 130px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wind span {
+  position: absolute;
+  left: 0;
+  width: 78%;
+  height: 18px;
+  border-top: 1px solid rgba(246, 230, 194, 0.82);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translateX(-30%);
+}
+
+.wind span:nth-child(1) {
+  top: 12px;
+  width: 64%;
+}
+
+.wind span:nth-child(2) {
+  top: 42px;
+  left: 12%;
+}
+
+.wind span:nth-child(3) {
+  top: 73px;
+  left: 4%;
+  width: 72%;
+}
+
+.wind span:nth-child(4) {
+  top: 100px;
+  left: 22%;
+  width: 53%;
+}
+
+.root[data-blowing="true"] .wind span {
+  animation: windSweep 820ms ease-out forwards;
+}
+
+.root[data-blowing="true"] .wind span:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.root[data-blowing="true"] .wind span:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.root[data-blowing="true"] .wind span:nth-child(4) {
+  animation-delay: 230ms;
+}
+
+.root[data-blown="true"] .cake {
+  animation: cakeCelebrate 900ms cubic-bezier(0.2, 0.78, 0.2, 1);
+}
+
+.blowButton,
+.enterButton {
+  position: absolute;
+  z-index: 8;
+  bottom: max(38px, env(safe-area-inset-bottom));
+  left: 50%;
+  min-width: 140px;
+  transform: translateX(-50%);
+}
+
+.blowButton {
+  overflow: hidden;
+}
+
+.blowButton::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(198, 169, 105, 0.1), rgba(242, 214, 143, 0.62));
+  transform: translateX(-102%);
+  content: "";
+}
+
+.blowButton > * {
+  position: relative;
+  z-index: 1;
+}
+
+.root[data-blowing="true"] .blowButton::after {
+  animation: breathProgress 900ms ease-in forwards;
+}
+
+.blowButton:hover:not(:disabled),
+.enterButton:hover:not(:disabled) {
+  transform: translate(-50%, -2px);
+}
+
+.enterButton {
+  min-width: 260px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 14px);
+}
+
+.root[data-blown="true"] .blowButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.root[data-blown="true"] .enterButton {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+  transition-delay: 900ms;
+}
+
+@keyframes photoReveal {
+  from {
+    opacity: 0.62;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+}
+
+@keyframes flameFlicker {
+  from {
+    transform: translateX(-50%) rotate(-6deg) scale(0.9, 1.08);
+  }
+  to {
+    transform: translateX(-50%) rotate(9deg) scale(1.06, 0.92);
+  }
+}
+
+@keyframes windSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-35%);
+  }
+  28% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(145%);
+  }
+}
+
+@keyframes smokeRise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.2);
+  }
+  18% {
+    opacity: 0.72;
+  }
+  58% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-19px, -76px) scaleY(1.12) skewX(-12deg);
+  }
+}
+
+@keyframes cakeCelebrate {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  36% {
+    transform: translateY(-8px) scale(1.025);
+  }
+  68% {
+    transform: translateY(2px) scale(0.994);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes breathProgress {
+  from {
+    transform: translateX(-102%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .wishContent {
+    width: min(650px, 72vw);
+  }
+
+  .wishContent h1 {
+    font-size: 58px;
+  }
+
+  .letter {
+    font-size: 14px;
+  }
+
+  .cakeCopy h2 {
+    font-size: 48px;
+  }
+
+  .cakeVisual {
+    right: 26px;
+    transform: translateY(-45%) scale(0.94);
+  }
+
+  .finalCopy strong {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 720px) {
+  .skipButton,
+  .replayButton {
+    top: max(14px, env(safe-area-inset-top));
+    width: 40px;
+    height: 40px;
+  }
+
+  .skipButton {
+    right: max(14px, env(safe-area-inset-right));
+  }
+
+  .replayButton {
+    left: max(14px, env(safe-area-inset-left));
+  }
+
+  .wishScene {
+    justify-content: flex-start;
+    padding: max(68px, calc(env(safe-area-inset-top) + 58px)) 20px max(30px, env(safe-area-inset-bottom));
+  }
+
+  .photo img {
+    object-position: 55% 67%;
+  }
+
+  .photoShade {
+    background:
+      linear-gradient(0deg, rgba(8, 7, 6, 0.95) 0%, rgba(8, 7, 6, 0.8) 62%, rgba(8, 7, 6, 0.48) 100%),
+      linear-gradient(90deg, rgba(8, 7, 6, 0.5), rgba(8, 7, 6, 0.2));
+  }
+
+  .wishContent {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .eyebrow {
+    margin-bottom: 14px;
+    font-size: 10px;
+  }
+
+  .wishContent h1 {
+    font-size: 40px;
+    line-height: 1;
+  }
+
+  .rule {
+    margin: 20px 0 18px;
+  }
+
+  .letter {
+    font-size: 13.5px;
+    line-height: 1.52;
+  }
+
+  .letter p + p {
+    margin-top: 8px;
+  }
+
+  .signature {
+    margin-top: 15px;
+    font-size: 18px;
+  }
+
+  .wishScene > .primaryButton {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    align-self: flex-end;
+    margin: 24px 0 0;
+    flex: 0 0 auto;
+  }
+
+  .cakeCopy,
+  .finalCopy {
+    top: max(70px, calc(env(safe-area-inset-top) + 56px));
+    left: 22px;
+    width: calc(100% - 44px);
+    text-align: center;
+  }
+
+  .cakeCopy h2 {
+    font-size: 36px;
+    line-height: 1.03;
+  }
+
+  .finalCopy {
+    transform: translateY(18px);
+  }
+
+  .finalCopy strong {
+    font-size: 30px;
+    line-height: 1.08;
+  }
+
+  .finalCopy p {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .root[data-blown="true"] .finalCopy {
+    transform: translateY(0);
+  }
+
+  .cakeVisual {
+    top: 57%;
+    right: auto;
+    left: 50%;
+    transform: translate(-50%, -44%) scale(0.74);
+  }
+
+  .candlelight {
+    top: 58%;
+    right: 50%;
+    width: 430px;
+    height: 430px;
+    transform: translate(50%, -50%);
+  }
+
+  .root[data-blowing="true"] .candlelight {
+    transform: translate(50%, -50%) scale(0.94);
+  }
+
+  .root[data-blown="true"] .candlelight {
+    transform: translate(50%, -50%) scale(1.12);
+  }
+
+  .blowButton,
+  .enterButton {
+    bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .enterButton {
+    width: calc(100% - 44px);
+    min-width: 0;
+  }
+}
+
+@media (max-height: 690px) and (max-width: 720px) {
+  .wishScene {
+    padding-top: max(58px, calc(env(safe-area-inset-top) + 48px));
+  }
+
+  .wishContent h1 {
+    font-size: 36px;
+  }
+
+  .letter {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .signature {
+    font-size: 17px;
+  }
+
+  .cakeCopy,
+  .finalCopy {
+    top: max(58px, calc(env(safe-area-inset-top) + 45px));
+  }
+
+  .cakeVisual {
+    top: 58%;
+    transform: translate(-50%, -44%) scale(0.64);
+  }
+
+  .finalCopy strong {
+    font-size: 26px;
+  }
+
+  .finalCopy p {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .wishScene,
+  .cakeScene,
+  .photo img,
+  .candlelight,
+  .cakeCopy,
+  .finalCopy,
+  .primaryButton,
+  .flame,
+  .enterButton {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
