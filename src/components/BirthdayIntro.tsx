@@ -1,13 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { sitePath } from "../lib/site-path";
 import styles from "./BirthdayIntro.module.css";
 
 const birthdaySessionKey = "mkt-birthday-intro-2026";
+const birthdayGateKey = "mkt-birthday-preview-unlocked-2026";
+const birthdayPassword = "emyeuanhphuongbac";
+const birthdayUnlockAt = Date.UTC(2026, 7, 25, 17);
 
 type IntroScene = "wish" | "cake";
+type GateStatus = "checking" | "locked" | "unlocking" | "unlocked";
 type MicrophoneState = "idle" | "requesting" | "listening" | "unavailable";
 
 type FireworkParticle = {
@@ -47,6 +51,30 @@ type FireworkRocket = {
   energy: number;
   color: string;
 };
+
+function getCountdownParts(remainingMs: number | null) {
+  if (remainingMs == null) {
+    return [
+      { label: "NGÀY", value: "--" },
+      { label: "GIỜ", value: "--" },
+      { label: "PHÚT", value: "--" },
+      { label: "GIÂY", value: "--" },
+    ];
+  }
+
+  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [
+    { label: "NGÀY", value: String(days).padStart(2, "0") },
+    { label: "GIỜ", value: String(hours).padStart(2, "0") },
+    { label: "PHÚT", value: String(minutes).padStart(2, "0") },
+    { label: "GIÂY", value: String(seconds).padStart(2, "0") },
+  ];
+}
 
 function playClickSound() {
   window.dispatchEvent(new Event("mkt-click"));
@@ -267,6 +295,10 @@ function launchFireworks(canvas: HTMLCanvasElement, reducedMotion: boolean) {
 export function BirthdayIntro() {
   const [isVisible, setIsVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
+  const [gateStatus, setGateStatus] = useState<GateStatus>("checking");
+  const [remainingMs, setRemainingMs] = useState<number | null>(null);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [scene, setScene] = useState<IntroScene>("wish");
   const [isBlowing, setIsBlowing] = useState(false);
   const [isBlown, setIsBlown] = useState(false);
@@ -277,10 +309,12 @@ export function BirthdayIntro() {
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const blowButtonRef = useRef<HTMLButtonElement>(null);
   const enterButtonRef = useRef<HTMLButtonElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const microphoneFrameRef = useRef(0);
   const blowTimerRef = useRef(0);
+  const gateTimerRef = useRef(0);
   const exitTimerRef = useRef(0);
   const fireworksCleanupRef = useRef<(() => void) | null>(null);
   const isBlowingRef = useRef(false);
@@ -428,16 +462,82 @@ export function BirthdayIntro() {
     setScene("wish");
   };
 
-  useEffect(() => {
-    let hideFrame = 0;
-    try {
-      if (window.sessionStorage.getItem(birthdaySessionKey) === "seen") {
-        hideFrame = window.requestAnimationFrame(() => setIsVisible(false));
+  const revealBirthday = useCallback(() => {
+    window.clearTimeout(gateTimerRef.current);
+    setGateStatus("unlocking");
+    gateTimerRef.current = window.setTimeout(() => {
+      setGateStatus("unlocked");
+      try {
+        if (window.sessionStorage.getItem(birthdaySessionKey) === "seen") {
+          setIsVisible(false);
+        }
+      } catch {
       }
+    }, 720);
+  }, []);
+
+  const handlePasswordSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    playClickSound();
+
+    if (password.trim() !== birthdayPassword) {
+      setPasswordError("Mật khẩu chưa đúng. Thử lại nhé.");
+      setPassword("");
+      window.requestAnimationFrame(() => passwordInputRef.current?.focus());
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(birthdayGateKey, "unlocked");
     } catch {
     }
-    return () => window.cancelAnimationFrame(hideFrame);
-  }, []);
+    setPasswordError(null);
+    setPassword("");
+    revealBirthday();
+  };
+
+  useEffect(() => {
+    let hideFrame = 0;
+    let initializeFrame = 0;
+    let countdownInterval = 0;
+    let isPreviewUnlocked = false;
+
+    try {
+      isPreviewUnlocked = window.localStorage.getItem(birthdayGateKey) === "unlocked";
+    } catch {
+    }
+
+    const updateCountdown = () => {
+      const nextRemainingMs = Math.max(0, birthdayUnlockAt - Date.now());
+      setRemainingMs(nextRemainingMs);
+      if (nextRemainingMs === 0) {
+        window.clearInterval(countdownInterval);
+        revealBirthday();
+      }
+    };
+
+    initializeFrame = window.requestAnimationFrame(() => {
+      if (Date.now() < birthdayUnlockAt && !isPreviewUnlocked) {
+        setGateStatus("locked");
+        updateCountdown();
+        countdownInterval = window.setInterval(updateCountdown, 1000);
+      } else {
+        setGateStatus("unlocked");
+        try {
+          if (window.sessionStorage.getItem(birthdaySessionKey) === "seen") {
+            hideFrame = window.requestAnimationFrame(() => setIsVisible(false));
+          }
+        } catch {
+        }
+      }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(hideFrame);
+      window.cancelAnimationFrame(initializeFrame);
+      window.clearInterval(countdownInterval);
+    };
+  }, [revealBirthday]);
 
   useEffect(() => {
     const siteContent = document.getElementById("site-content");
@@ -453,6 +553,12 @@ export function BirthdayIntro() {
 
   useEffect(() => {
     if (!isVisible) return;
+    if (gateStatus === "locked") {
+      const focusFrame = window.requestAnimationFrame(() => passwordInputRef.current?.focus());
+      return () => window.cancelAnimationFrame(focusFrame);
+    }
+    if (gateStatus !== "unlocked") return;
+
     const button = scene === "wish"
       ? openButtonRef.current
       : isBlown
@@ -460,10 +566,11 @@ export function BirthdayIntro() {
         : blowButtonRef.current;
     const focusFrame = window.requestAnimationFrame(() => button?.focus());
     return () => window.cancelAnimationFrame(focusFrame);
-  }, [isBlown, isVisible, scene]);
+  }, [gateStatus, isBlown, isVisible, scene]);
 
   useEffect(() => () => {
     window.clearTimeout(blowTimerRef.current);
+    window.clearTimeout(gateTimerRef.current);
     window.clearTimeout(exitTimerRef.current);
     stopMicrophone();
     fireworksCleanupRef.current?.();
@@ -476,21 +583,118 @@ export function BirthdayIntro() {
     : microphoneState === "listening"
       ? "Thổi vào micro"
       : "Thổi nến";
+  const countdownParts = getCountdownParts(remainingMs);
+  const isGateOpen = gateStatus === "unlocked";
 
   return (
     <section
       ref={stageRef}
       className={`${styles.root} ${isExiting ? styles.exiting : ""}`}
       data-scene={scene}
+      data-gate={gateStatus}
       data-blowing={isBlowing}
       data-blown={isBlown}
       role="dialog"
       aria-modal="true"
-      aria-label="Chúc mừng sinh nhật Mông Khánh Truyền"
+      aria-label={isGateOpen ? "Chúc mừng sinh nhật Mông Khánh Truyền" : "Món quà sinh nhật đang được khóa"}
     >
       <div className={styles.grain} aria-hidden="true" />
 
-      <button className={styles.skipButton} type="button" onClick={closeIntro} aria-label="Bỏ qua lời chúc">
+      {gateStatus !== "unlocked" && (
+        <div
+          className={`${styles.gate} ${gateStatus === "unlocking" ? styles.gateUnlocking : ""}`}
+          aria-busy={gateStatus === "checking"}
+        >
+          <div className={styles.gatePhoto} aria-hidden="true">
+            <Image
+              src={sitePath("/images/mkt/IMG_3265.jpg")}
+              alt=""
+              fill
+              sizes="100vw"
+              priority
+            />
+          </div>
+          <div className={styles.gateShade} aria-hidden="true" />
+          <div className={styles.gateFrame} aria-hidden="true" />
+
+          <div className={styles.gateLayout}>
+            <div className={styles.gateCopy}>
+              <div className={styles.gateLockMark} aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="5" y="10" width="14" height="11" rx="1" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+                </svg>
+              </div>
+              <p className={styles.gateEyebrow}>MKT / 26 · 08 · 2026</p>
+              <h1>
+                Món quà này
+                <span>chưa đến lúc mở.</span>
+              </h1>
+              <p className={styles.gateMessage}>
+                Anh giữ nơi này kín đến đúng ngày của em. Một chút chờ đợi để điều bất ngờ trở nên trọn vẹn hơn.
+              </p>
+
+              <div className={styles.countdown} aria-label="Đếm ngược đến ngày 26 tháng 8 năm 2026">
+                {countdownParts.map((part) => (
+                  <div className={styles.countdownPart} key={part.label} aria-hidden="true">
+                    <strong>{part.value}</strong>
+                    <span>{part.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <form className={styles.gateForm} onSubmit={handlePasswordSubmit}>
+              <label htmlFor="birthday-password">MẬT KHẨU MỞ SỚM</label>
+              <div className={styles.gateInputRow}>
+                <div className={styles.gateInputShell}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="5" y="10" width="14" height="11" rx="1" />
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  </svg>
+                  <input
+                    ref={passwordInputRef}
+                    id="birthday-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.currentTarget.value);
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    autoComplete="off"
+                    placeholder="Nhập mật khẩu"
+                    aria-invalid={passwordError != null}
+                    aria-describedby="birthday-password-error"
+                    disabled={gateStatus !== "locked"}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  aria-label="Mở khóa món quà"
+                  title="Mở khóa"
+                  disabled={gateStatus !== "locked" || password.length === 0}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14m-5-5 5 5-5 5" />
+                  </svg>
+                </button>
+              </div>
+              <p id="birthday-password-error" className={styles.gateError} role="alert">
+                {passwordError ?? "\u00a0"}
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <button
+        className={styles.skipButton}
+        type="button"
+        onClick={closeIntro}
+        aria-label="Bỏ qua lời chúc"
+        aria-hidden={!isGateOpen}
+        tabIndex={isGateOpen ? 0 : -1}
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m6 6 12 12M18 6 6 18" />
         </svg>
@@ -501,15 +705,15 @@ export function BirthdayIntro() {
         type="button"
         onClick={handleReplay}
         aria-label="Xem lại lời chúc"
-        aria-hidden={scene !== "cake" || !isBlown}
-        tabIndex={scene === "cake" && isBlown ? 0 : -1}
+        aria-hidden={!isGateOpen || scene !== "cake" || !isBlown}
+        tabIndex={isGateOpen && scene === "cake" && isBlown ? 0 : -1}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5" />
         </svg>
       </button>
 
-      <div className={styles.wishScene} aria-hidden={scene !== "wish"}>
+      <div className={styles.wishScene} aria-hidden={!isGateOpen || scene !== "wish"}>
         <div className={styles.photo} aria-hidden="true">
           <Image
             src={sitePath("/images/mkt/IMG_3265.jpg")}
@@ -550,7 +754,7 @@ export function BirthdayIntro() {
           className={styles.primaryButton}
           type="button"
           onClick={handleOpenGift}
-          tabIndex={scene === "wish" ? 0 : -1}
+          tabIndex={isGateOpen && scene === "wish" ? 0 : -1}
         >
           <span>Mở món quà của anh</span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -559,7 +763,7 @@ export function BirthdayIntro() {
         </button>
       </div>
 
-      <div className={styles.cakeScene} aria-hidden={scene !== "cake"}>
+      <div className={styles.cakeScene} aria-hidden={!isGateOpen || scene !== "cake"}>
         <canvas ref={canvasRef} className={styles.fireworks} aria-hidden="true" />
         <div className={styles.sky} aria-hidden="true" />
         <div className={styles.candlelight} aria-hidden="true" />
@@ -616,7 +820,7 @@ export function BirthdayIntro() {
           onClick={handleBlowButton}
           disabled={microphoneState === "requesting" || isBlowing}
           aria-hidden={isBlown}
-          tabIndex={scene === "cake" && !isBlown ? 0 : -1}
+          tabIndex={isGateOpen && scene === "cake" && !isBlown ? 0 : -1}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 8h8a3 3 0 1 0-3-3M4 12h13a3 3 0 1 1-3 3M4 16h5" />
@@ -630,7 +834,7 @@ export function BirthdayIntro() {
           type="button"
           onClick={closeIntro}
           aria-hidden={!isBlown}
-          tabIndex={scene === "cake" && isBlown ? 0 : -1}
+          tabIndex={isGateOpen && scene === "cake" && isBlown ? 0 : -1}
         >
           <span>Vào kỷ niệm của chúng mình</span>
           <svg viewBox="0 0 24 24" aria-hidden="true">
