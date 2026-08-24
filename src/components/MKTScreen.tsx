@@ -834,7 +834,7 @@ const loveNotes = [
   "Anh thích nghe em hát",
   "Anh thích ở bên em",
   "Anh thích được nghe em kể chuyện",
-  "Anh thích cách em đối xử với em",
+  "Anh thích cách em đối xử với anh",
   "Anh thích nắm tay em",
 ] as const;
 
