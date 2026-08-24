@@ -12,6 +12,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import { sitePath } from "../lib/site-path";
+import { useMediaPlayback } from "./MediaPlaybackCoordinator";
 
 type MemoryMediaType = "image" | "video";
 
@@ -45,6 +46,27 @@ type TablePlacement = TablePoint & {
   width: number;
   zIndex: number;
 };
+
+function MemoryVideo({ item }: { item: MemoryItem }) {
+  const { beginMediaPlayback, endMediaPlayback } = useMediaPlayback();
+
+  useEffect(() => () => {
+    endMediaPlayback("memory-video");
+  }, [endMediaPlayback]);
+
+  return (
+    <video
+      src={item.mediaUrl}
+      controls
+      autoPlay
+      playsInline
+      preload="metadata"
+      onPlay={() => beginMediaPlayback("memory-video")}
+      onPause={() => endMediaPlayback("memory-video")}
+      onEnded={() => endMediaPlayback("memory-video")}
+    />
+  );
+}
 
 const manifestUrl = sitePath("/memory-media/manifest.json");
 const tableCellWidth = 330;
@@ -501,13 +523,9 @@ export function MemoryGallery() {
 
           <div className="memory-viewer__media">
             {selectedItem.type === "video" ? (
-              <video
+              <MemoryVideo
                 key={selectedItem.id}
-                src={selectedItem.mediaUrl}
-                controls
-                autoPlay
-                playsInline
-                preload="metadata"
+                item={selectedItem}
               />
             ) : (
               <Image

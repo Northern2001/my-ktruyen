@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useMediaPlayback } from "./MediaPlaybackCoordinator";
 
 export type Mp3Track = {
   fileName: string;
@@ -68,6 +69,7 @@ function ArrowIcon({ direction }: { direction: "previous" | "next" }) {
 }
 
 export function Mp3Library({ tracks }: { tracks: readonly Mp3Track[] }) {
+  const { beginMediaPlayback, endMediaPlayback } = useMediaPlayback();
   const audioRef = useRef<HTMLAudioElement>(null);
   const waveformRef = useRef<HTMLCanvasElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -85,7 +87,8 @@ export function Mp3Library({ tracks }: { tracks: readonly Mp3Track[] }) {
 
   useEffect(() => () => {
     void audioContextRef.current?.close();
-  }, []);
+    endMediaPlayback("mp3-library");
+  }, [endMediaPlayback]);
 
   useEffect(() => {
     const canvas = waveformRef.current;
@@ -189,6 +192,8 @@ export function Mp3Library({ tracks }: { tracks: readonly Mp3Track[] }) {
       return;
     }
 
+    beginMediaPlayback("mp3-library");
+
     if (activeIndex !== index) {
       audio.src = track.url;
       audio.load();
@@ -200,6 +205,7 @@ export function Mp3Library({ tracks }: { tracks: readonly Mp3Track[] }) {
 
     void audio.play().catch(() => {
       setIsPlaying(false);
+      endMediaPlayback("mp3-library");
       setPlaybackError(`Không thể phát “${track.title}”.`);
     });
   };
@@ -388,8 +394,14 @@ export function Mp3Library({ tracks }: { tracks: readonly Mp3Track[] }) {
       <audio
         ref={audioRef}
         preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPlay={() => {
+          beginMediaPlayback("mp3-library");
+          setIsPlaying(true);
+        }}
+        onPause={() => {
+          endMediaPlayback("mp3-library");
+          setIsPlaying(false);
+        }}
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
         onDurationChange={(event) => setDuration(event.currentTarget.duration)}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}

@@ -896,6 +896,7 @@ export function MKTCanvas({
   displayMode,
   displayStyle,
   isMobile,
+  isActive,
   playingTrackIndex,
 }: {
   items: readonly GalleryItem[];
@@ -913,6 +914,7 @@ export function MKTCanvas({
   displayMode: DisplayMode;
   displayStyle: DisplayStyle;
   isMobile: boolean;
+  isActive: boolean;
   playingTrackIndex: number | null;
 }) {
   return (
@@ -920,7 +922,7 @@ export function MKTCanvas({
       camera={{ position: [0, 0, 14], fov: 42 }}
       gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
       dpr={isMobile ? [1, 1.5] : [1, 2]}
-      frameloop="always"
+      frameloop={isActive ? "always" : "never"}
       onCreated={({ camera, gl }) => {
         camera.lookAt(0, 0, 0);
         gl.setClearColor(0x000000, 0);

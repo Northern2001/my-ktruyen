@@ -3,6 +3,8 @@ import "./globals.css";
 import { GlobalSound } from "../components/GlobalSound";
 import { AppMenu } from "../components/AppMenu";
 import { BirthdayIntroRoute } from "../components/BirthdayIntroRoute";
+import { MediaPlaybackCoordinator } from "../components/MediaPlaybackCoordinator";
+import { PersistentPages } from "../components/PersistentPages";
 import { sitePath } from "../lib/site-path";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -84,7 +86,9 @@ export default function RootLayout({
         <BirthdayIntroRoute />
         <div id="site-content" className="site-content">
           <AppMenu />
-          {children}
+          <MediaPlaybackCoordinator>
+            <PersistentPages>{children}</PersistentPages>
+          </MediaPlaybackCoordinator>
         </div>
       </body>
     </html>

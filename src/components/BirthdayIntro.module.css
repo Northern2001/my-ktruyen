@@ -8,8 +8,16 @@
   isolation: isolate;
   background: #080706;
   color: #f7f0e7;
-  opacity: 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition: opacity 650ms ease, visibility 650ms ease;
+}
+
+.root.ready {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .root.exiting {
@@ -426,7 +434,8 @@
 
 .wishScene,
 .cakeScene,
-.contentsScene {
+.contentsScene,
+.videoScene {
   position: absolute;
   inset: 0;
   box-sizing: border-box;
@@ -439,7 +448,8 @@
 
 .root[data-scene="wish"] .wishScene,
 .root[data-scene="cake"] .cakeScene,
-.root[data-scene="contents"] .contentsScene {
+.root[data-scene="contents"] .contentsScene,
+.root[data-scene="video"] .videoScene {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -620,6 +630,21 @@
   overflow-y: auto;
   padding: max(74px, env(safe-area-inset-top)) clamp(28px, 6vw, 88px) max(54px, env(safe-area-inset-bottom));
   background: #080706;
+}
+
+.videoScene {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+}
+
+.videoScene video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
 }
 
 .contentsPhoto,
@@ -1857,6 +1882,7 @@
   .wishScene,
   .cakeScene,
   .contentsScene,
+  .videoScene,
   .contentsPhoto img,
   .contentsHeading,
   .giftItem,

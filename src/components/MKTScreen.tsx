@@ -35,6 +35,7 @@ import { MKTTrackList } from "./MKTTrackList";
 import { MKTCanvas } from "./MKTCanvas";
 import { MKTTrackDetail } from "./MKTTrackDetail";
 import { MKTDock } from "./MKTDock";
+import { useMediaPlayback } from "./MediaPlaybackCoordinator";
 import { sitePath } from "../lib/site-path";
 
 type GalleryItemSeed = Omit<GalleryItem, "pMobileBackground" | "bMobileBackground"> & Partial<Pick<GalleryItem, "pMobileBackground" | "bMobileBackground">>;
@@ -183,6 +184,141 @@ const replacementGalleryItems = withGalleryDefaults([
     subtitle: "邹沛沛, Pank",
     imageUrl: "/images/mkt/cover-051.jpg",
     audioUrl: "/music/红线.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 15,
+    durationSeconds: 197.04,
+    title: "ĐỢI",
+    subtitle: "52Hz",
+    imageUrl: "/images/mkt/cover-064.jpg",
+    audioUrl: "/music/ĐỢI - 52Hz.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 16,
+    durationSeconds: 190.344,
+    title: "Món Quà",
+    subtitle: "Dangrangto",
+    imageUrl: "/images/mkt/cover-083.jpg",
+    audioUrl: "/music/Món quà - Dangrangto.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 17,
+    durationSeconds: 249.912,
+    title: "Đắm Say Trong Tình Yêu",
+    subtitle: "Dangrangto",
+    imageUrl: "/images/mkt/cover-084.jpg",
+    audioUrl: "/music/Đắm say trong tình yêu - Dangrangto.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 18,
+    durationSeconds: 264.864,
+    title: "Một Ly",
+    subtitle: "Dangrangto",
+    imageUrl: "/images/mkt/cover-085.jpg",
+    audioUrl: "/music/Một ly - Dangrangto.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 19,
+    durationSeconds: 251.712,
+    title: "Die With A Smile",
+    subtitle: "Lady Gaga",
+    imageUrl: "/images/mkt/cover-086.jpg",
+    audioUrl: "/music/Die With A Smile - Lady Gaga.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 20,
+    durationSeconds: 172.773875,
+    title: "寫給七月的你",
+    subtitle: "邹沛沛",
+    imageUrl: "/images/mkt/cover-087.jpg",
+    audioUrl: "/music/寫給七月的你 - 邹沛沛.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 21,
+    durationSeconds: 177.789375,
+    title: "我的男孩",
+    subtitle: "邹沛沛",
+    imageUrl: "/images/mkt/cover-088.jpg",
+    audioUrl: "/music/我的男孩 - 邹沛沛.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 22,
+    durationSeconds: 202.55345,
+    title: "未完冬",
+    subtitle: "邹沛沛",
+    imageUrl: "/images/mkt/cover-090.jpg",
+    audioUrl: "/music/未完冬 - 邹沛沛.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 23,
+    durationSeconds: 139.467755,
+    title: "Hug Me",
+    subtitle: "邹沛沛",
+    imageUrl: "/images/mkt/cover-092.jpg",
+    audioUrl: "/music/Hug me - 邹沛沛.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 24,
+    durationSeconds: 186.01795,
+    title: "琥珀擁住的黑蝴蝶",
+    subtitle: "邹沛沛",
+    imageUrl: "/images/mkt/cover-093.jpg",
+    audioUrl: "/music/琥珀擁住的黑蝴蝶 - 邹沛沛.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 25,
+    durationSeconds: 124.94365,
+    title: "梦时",
+    subtitle: "Juggshots",
+    imageUrl: "/images/mkt/cover-095.jpg",
+    audioUrl: "/music/梦时 - Juggshots.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 26,
+    durationSeconds: 238.759175,
+    title: "爱怎么了",
+    subtitle: "陈村长",
+    imageUrl: "/images/mkt/cover-096.jpg",
+    audioUrl: "/music/爱怎么了 - 陈村长.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 27,
+    durationSeconds: 183.1706,
+    title: "第57次取消发送",
+    subtitle: "菲菲公主",
+    imageUrl: "/images/mkt/cover-098.jpg",
+    audioUrl: "/music/第57次取消发送 - 菲菲公主.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 28,
+    durationSeconds: 26.749388,
+    title: "Một Cái Ôm",
+    subtitle: "RPT MCK",
+    imageUrl: "/images/mkt/cover-099.jpg",
+    audioUrl: "/music/mot-cai-om.mp3",
+    type: "pulled",
+  },
+  {
+    numberTrack: 29,
+    durationSeconds: 234.1355,
+    title: "Liệm",
+    subtitle: "RPT MCK",
+    imageUrl: "/images/mkt/cover-100.jpg",
+    audioUrl: "/music/liem.mp3",
     type: "pulled",
   },
 ] satisfies readonly GalleryItemSeed[]);
@@ -675,7 +811,7 @@ const legacyGalleryItems = withGalleryDefaults(
 
 const galleryItems: readonly GalleryItem[] = [
   ...replacementGalleryItems,
-  ...legacyGalleryItems.filter((item) => item.numberTrack >= 15),
+  ...legacyGalleryItems.filter((item) => item.numberTrack >= 31),
 ];
 const playableTrackCount = galleryItems.filter((item) => item.type === "pulled").length;
 
@@ -911,7 +1047,8 @@ function StreamingPlatformLinks({
 }
 
 
-export function MKTScreen() {
+export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
+  const { albumAudioRef: audioRef } = useMediaPlayback();
   const tubeScrollTarget = useRef(0);
   const tubeFocusItem = useRef<number | null>(null);
   const isDragging = useRef(false);
@@ -1002,7 +1139,6 @@ export function MKTScreen() {
   const mobileScrollTopRef = useRef(0);
   const isDetailMinimizedRef = useRef(false);
   const handleNextTrackRef = useRef<() => void>(() => {});
-  const audioRef = useRef<HTMLAudioElement>(null);
   const isSeekingRef = useRef(false);
   const resumeAfterSeekRef = useRef(false);
   const audioSeekRequestRef = useRef(0);
@@ -2374,7 +2510,7 @@ export function MKTScreen() {
   }, [clearFloatingPlayerHideTimeout]);
 
   useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
+    if (!isActive || !("mediaSession" in navigator)) return;
 
     const mediaSession = navigator.mediaSession;
     const setAction = (action: MediaSessionAction, handler: MediaSessionActionHandler | null) => {
@@ -2439,10 +2575,10 @@ export function MKTScreen() {
       setAction("seekforward", null);
       setAction("seekto", null);
     };
-  }, [handleNextTrack, isPlaying, selectedTrack]);
+  }, [handleNextTrack, isActive, isPlaying, selectedTrack]);
 
   useEffect(() => {
-    if (!("mediaSession" in navigator) || !duration || !Number.isFinite(duration)) return;
+    if (!isActive || !("mediaSession" in navigator) || !duration || !Number.isFinite(duration)) return;
 
     try {
       navigator.mediaSession.setPositionState({
@@ -2453,7 +2589,7 @@ export function MKTScreen() {
     } catch {
       // Position state is optional on some browsers.
     }
-  }, [currentTime, duration]);
+  }, [currentTime, duration, isActive]);
 
   return (
     <div className="sceneRoot">
@@ -2535,6 +2671,7 @@ export function MKTScreen() {
           displayMode={displayMode}
           displayStyle={displayStyle}
           isMobile={isMobile}
+          isActive={isActive}
           playingTrackIndex={showOverlay && isDetailPlaying && selectedProject ? selectedProject.index : null}
         />
       )}

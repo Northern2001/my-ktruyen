@@ -6,11 +6,12 @@ import { sitePath } from "../lib/site-path";
 import styles from "./BirthdayIntro.module.css";
 
 const birthdaySessionKey = "mkt-birthday-intro-2026";
+const birthdayCompletedKey = "mkt-birthday-intro-completed-2026";
 const birthdayGateKey = "mkt-birthday-preview-unlocked-2026";
 const birthdayPassword = "emyeuanhphuongbac";
 const birthdayUnlockAt = Date.UTC(2026, 7, 25, 17);
 
-type IntroScene = "wish" | "cake" | "contents";
+type IntroScene = "wish" | "cake" | "contents" | "video";
 type GateStatus = "checking" | "locked" | "unlocking" | "unlocked";
 type MicrophoneState = "idle" | "requesting" | "listening" | "unavailable";
 
@@ -294,6 +295,7 @@ function launchFireworks(canvas: HTMLCanvasElement, reducedMotion: boolean) {
 
 export function BirthdayIntro() {
   const [isVisible, setIsVisible] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [gateStatus, setGateStatus] = useState<GateStatus>("checking");
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
@@ -310,6 +312,7 @@ export function BirthdayIntro() {
   const blowButtonRef = useRef<HTMLButtonElement>(null);
   const enterButtonRef = useRef<HTMLButtonElement>(null);
   const siteButtonRef = useRef<HTMLButtonElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -431,18 +434,30 @@ export function BirthdayIntro() {
     void requestMicrophone();
   };
 
-  const closeIntro = useCallback(() => {
-    playClickSound();
+  const exitIntro = useCallback((completed: boolean) => {
     stopMicrophone();
+    videoRef.current?.pause();
     fireworksCleanupRef.current?.();
     fireworksCleanupRef.current = null;
     try {
       window.sessionStorage.setItem(birthdaySessionKey, "seen");
+      if (completed) {
+        window.localStorage.setItem(birthdayCompletedKey, "seen");
+      }
     } catch {
     }
     setIsExiting(true);
     exitTimerRef.current = window.setTimeout(() => setIsVisible(false), 650);
   }, [stopMicrophone]);
+
+  const handleSkipIntro = () => {
+    playClickSound();
+    exitIntro(false);
+  };
+
+  const handleVideoEnded = () => {
+    exitIntro(true);
+  };
 
   const handleOpenGift = () => {
     playClickSound();
@@ -454,6 +469,15 @@ export function BirthdayIntro() {
     fireworksCleanupRef.current?.();
     fireworksCleanupRef.current = null;
     setScene("contents");
+  };
+
+  const handleStartVideo = () => {
+    playClickSound();
+    setScene("video");
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      void videoRef.current.play().catch(() => {});
+    }
   };
 
   const handleReplay = () => {
@@ -476,7 +500,10 @@ export function BirthdayIntro() {
     gateTimerRef.current = window.setTimeout(() => {
       setGateStatus("unlocked");
       try {
-        if (window.sessionStorage.getItem(birthdaySessionKey) === "seen") {
+        if (
+          window.localStorage.getItem(birthdayCompletedKey) === "seen"
+          || window.sessionStorage.getItem(birthdaySessionKey) === "seen"
+        ) {
           setIsVisible(false);
         }
       } catch {
@@ -505,13 +532,15 @@ export function BirthdayIntro() {
   };
 
   useEffect(() => {
-    let hideFrame = 0;
     let initializeFrame = 0;
     let countdownInterval = 0;
     let isPreviewUnlocked = false;
+    let hasSeenIntro = false;
 
     try {
       isPreviewUnlocked = window.localStorage.getItem(birthdayGateKey) === "unlocked";
+      hasSeenIntro = window.localStorage.getItem(birthdayCompletedKey) === "seen"
+        || window.sessionStorage.getItem(birthdaySessionKey) === "seen";
     } catch {
     }
 
@@ -525,23 +554,22 @@ export function BirthdayIntro() {
     };
 
     initializeFrame = window.requestAnimationFrame(() => {
+      if (hasSeenIntro) {
+        setIsVisible(false);
+        return;
+      }
+
       if (Date.now() < birthdayUnlockAt && !isPreviewUnlocked) {
         setGateStatus("locked");
         updateCountdown();
         countdownInterval = window.setInterval(updateCountdown, 1000);
       } else {
         setGateStatus("unlocked");
-        try {
-          if (window.sessionStorage.getItem(birthdaySessionKey) === "seen") {
-            hideFrame = window.requestAnimationFrame(() => setIsVisible(false));
-          }
-        } catch {
-        }
       }
+      setIsInitialized(true);
     });
 
     return () => {
-      window.cancelAnimationFrame(hideFrame);
       window.cancelAnimationFrame(initializeFrame);
       window.clearInterval(countdownInterval);
     };
@@ -567,14 +595,16 @@ export function BirthdayIntro() {
     }
     if (gateStatus !== "unlocked") return;
 
-    const button = scene === "wish"
+    const focusTarget = scene === "wish"
       ? openButtonRef.current
       : scene === "contents"
         ? siteButtonRef.current
+        : scene === "video"
+          ? videoRef.current
         : isBlown
           ? enterButtonRef.current
           : blowButtonRef.current;
-    const focusFrame = window.requestAnimationFrame(() => button?.focus({ preventScroll: true }));
+    const focusFrame = window.requestAnimationFrame(() => focusTarget?.focus({ preventScroll: true }));
     return () => window.cancelAnimationFrame(focusFrame);
   }, [gateStatus, isBlown, isVisible, scene]);
 
@@ -599,7 +629,7 @@ export function BirthdayIntro() {
   return (
     <section
       ref={stageRef}
-      className={`${styles.root} ${isExiting ? styles.exiting : ""}`}
+      className={`${styles.root} ${isInitialized ? styles.ready : ""} ${isExiting ? styles.exiting : ""}`}
       data-scene={scene}
       data-gate={gateStatus}
       data-blowing={isBlowing}
@@ -700,8 +730,8 @@ export function BirthdayIntro() {
       <button
         className={styles.skipButton}
         type="button"
-        onClick={closeIntro}
-        aria-label="Bỏ qua lời chúc"
+        onClick={handleSkipIntro}
+        aria-label="Bỏ qua màn giới thiệu"
         aria-hidden={!isGateOpen}
         tabIndex={isGateOpen ? 0 : -1}
       >
@@ -928,16 +958,31 @@ export function BirthdayIntro() {
               ref={siteButtonRef}
               className={`${styles.primaryButton} ${styles.contentsButton}`}
               type="button"
-              onClick={closeIntro}
+              onClick={handleStartVideo}
               tabIndex={isGateOpen && scene === "contents" ? 0 : -1}
             >
-              <span>Bắt đầu khám phá</span>
+              <span>Xem món quà cuối cùng</span>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 12h14m-5-5 5 5-5 5" />
               </svg>
             </button>
           </div>
         </div>
+      </div>
+
+      <div className={styles.videoScene} aria-hidden={!isGateOpen || scene !== "video"}>
+        <video
+          ref={videoRef}
+          controls
+          playsInline
+          preload="metadata"
+          onEnded={handleVideoEnded}
+          tabIndex={isGateOpen && scene === "video" ? 0 : -1}
+          aria-label="Video cuối màn giới thiệu"
+        >
+          <source src={sitePath("/videos/info.mp4")} type="video/mp4" />
+          Trình duyệt của bạn không hỗ trợ phát video.
+        </video>
       </div>
     </section>
   );
