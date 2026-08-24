@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { requestAlbumTrackPlayback } from "../lib/media-events";
 import { sitePath } from "../lib/site-path";
 import styles from "./BirthdayIntro.module.css";
 
@@ -10,6 +11,7 @@ const birthdayCompletedKey = "mkt-birthday-intro-completed-2026";
 const birthdayGateKey = "mkt-birthday-preview-unlocked-2026";
 const birthdayPassword = "emyeuanhphuongbac";
 const birthdayUnlockAt = Date.UTC(2026, 7, 25, 17);
+const birthdayHomeTrackIndex = 1;
 
 type IntroScene = "wish" | "cake" | "contents" | "video";
 type GateStatus = "checking" | "locked" | "unlocking" | "unlocked";
@@ -437,6 +439,7 @@ export function BirthdayIntro() {
   const exitIntro = useCallback((completed: boolean) => {
     stopMicrophone();
     videoRef.current?.pause();
+    requestAlbumTrackPlayback(birthdayHomeTrackIndex);
     fireworksCleanupRef.current?.();
     fireworksCleanupRef.current = null;
     try {
@@ -505,6 +508,7 @@ export function BirthdayIntro() {
           || window.sessionStorage.getItem(birthdaySessionKey) === "seen"
         ) {
           setIsVisible(false);
+          requestAlbumTrackPlayback(birthdayHomeTrackIndex);
         }
       } catch {
       }
@@ -556,6 +560,7 @@ export function BirthdayIntro() {
     initializeFrame = window.requestAnimationFrame(() => {
       if (hasSeenIntro) {
         setIsVisible(false);
+        window.setTimeout(() => requestAlbumTrackPlayback(birthdayHomeTrackIndex), 0);
         return;
       }
 

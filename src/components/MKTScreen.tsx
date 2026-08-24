@@ -36,6 +36,7 @@ import { MKTCanvas } from "./MKTCanvas";
 import { MKTTrackDetail } from "./MKTTrackDetail";
 import { MKTDock } from "./MKTDock";
 import { useMediaPlayback } from "./MediaPlaybackCoordinator";
+import { playAlbumTrackEvent, type PlayAlbumTrackDetail } from "../lib/media-events";
 import { sitePath } from "../lib/site-path";
 
 type GalleryItemSeed = Omit<GalleryItem, "pMobileBackground" | "bMobileBackground"> & Partial<Pick<GalleryItem, "pMobileBackground" | "bMobileBackground">>;
@@ -1143,6 +1144,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   const resumeAfterSeekRef = useRef(false);
   const audioSeekRequestRef = useRef(0);
   const pendingAudioSeekCleanupRef = useRef<(() => void) | null>(null);
+  const requestedAutoplayTrackRef = useRef<number | null>(null);
 
   const dragState = useRef<{
     pointerId: number;
@@ -1862,6 +1864,49 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
       isLyricsOpen && nextPresentation === "detail",
     );
   }, [handleImageClick, isLyricsOpen, nextTrackResult]);
+
+  const playRequestedAlbumTrack = useCallback((trackIndex: number) => {
+    const track = galleryItems[trackIndex];
+    if (!isActive || !track?.audioUrl) return;
+
+    requestedAutoplayTrackRef.current = trackIndex;
+    handleImageClick(track.title, track.imageUrl, trackIndex, "minimized");
+  }, [handleImageClick, isActive]);
+
+  useEffect(() => {
+    const handleTrackRequest = (event: Event) => {
+      const trackIndex = (event as CustomEvent<PlayAlbumTrackDetail>).detail?.index;
+      if (!Number.isInteger(trackIndex)) return;
+      playRequestedAlbumTrack(trackIndex);
+    };
+
+    window.addEventListener(playAlbumTrackEvent, handleTrackRequest);
+    return () => window.removeEventListener(playAlbumTrackEvent, handleTrackRequest);
+  }, [playRequestedAlbumTrack]);
+
+  useEffect(() => {
+    if (requestedAutoplayTrackRef.current == null) return;
+    if (isPlaying) {
+      requestedAutoplayTrackRef.current = null;
+      return;
+    }
+
+    const resumeRequestedTrack = () => {
+      const audio = audioRef.current;
+      if (!audio || requestedAutoplayTrackRef.current !== selectedProject?.index) return;
+
+      void audio.play().then(() => {
+        requestedAutoplayTrackRef.current = null;
+      }).catch(() => {});
+    };
+
+    window.addEventListener("pointerdown", resumeRequestedTrack, true);
+    window.addEventListener("keydown", resumeRequestedTrack, true);
+    return () => {
+      window.removeEventListener("pointerdown", resumeRequestedTrack, true);
+      window.removeEventListener("keydown", resumeRequestedTrack, true);
+    };
+  }, [audioRef, isPlaying, selectedProject?.index]);
 
   const handlePreviousTrack = useCallback((presentation: TrackPresentation = "minimized") => {
     if (!previousTrackResult) return;
