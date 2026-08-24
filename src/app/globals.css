@@ -162,6 +162,93 @@ body {
   display: none;
 }
 
+.mobile-header-love {
+  display: none;
+}
+
+.album-love-button {
+  border: 0;
+  background: transparent;
+  color: #ff8298;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.album-love-button::before {
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border: 1px solid rgba(255, 130, 152, 0.72);
+  border-radius: 50%;
+  background: rgba(14, 14, 14, 0.68);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 18px rgba(255, 83, 116, 0.38);
+  content: "";
+  animation: album-love-glow 2.8s ease-in-out infinite;
+}
+
+.album-love-button__halo {
+  position: absolute;
+  inset: 2px;
+  z-index: -2;
+  border: 1px solid rgba(255, 130, 152, 0.7);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: album-love-halo 2.8s ease-out infinite;
+}
+
+.album-love-button__halo--delayed {
+  animation-delay: 1.4s;
+}
+
+.album-love-button__icon {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 25px;
+  height: 25px;
+  filter: drop-shadow(0 0 5px rgba(255, 104, 135, 0.68));
+  animation: album-love-icon 2.8s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.album-love-button__spark {
+  stroke: #ffd166;
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: album-love-spark 1.4s ease-in-out infinite alternate;
+}
+
+.album-love-button__spark--two {
+  animation-delay: 700ms;
+}
+
+.album-love-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.desktop-header-love {
+  position: fixed;
+  top: 24px;
+  right: 70px;
+  z-index: 40;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  place-items: center;
+  padding: 0;
+  transition: opacity 260ms ease;
+}
+
+.desktop-header-love.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .desktop-header-settings {
   position: fixed;
   top: 24px;
@@ -3191,6 +3278,251 @@ body {
   min-width: 42px;
 }
 
+.love-notes-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 265;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 20px;
+  background: rgba(2, 2, 2, 0.66);
+  -webkit-backdrop-filter: blur(16px) saturate(0.82);
+  backdrop-filter: blur(16px) saturate(0.82);
+  animation: love-notes-backdrop-in 360ms ease both;
+}
+
+.love-notes-modal__panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 40px);
+  box-sizing: border-box;
+  overflow: hidden auto;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, rgba(255, 113, 139, 0.12), transparent 18%, transparent 82%, rgba(255, 209, 102, 0.08)),
+    rgba(13, 13, 14, 0.97);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.68),
+    0 0 42px rgba(255, 75, 112, 0.14);
+  color: rgba(255, 255, 255, 0.94);
+  scrollbar-width: thin;
+  animation: love-notes-panel-in 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.love-notes-modal__panel::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff718b 42%, #ffd166 58%, transparent);
+  content: "";
+  transform-origin: left;
+  animation: love-notes-line-in 900ms 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.love-notes-modal__header {
+  display: grid;
+  min-height: 82px;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.love-notes-modal__header h2 {
+  margin: 0;
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.love-notes-modal__close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.love-notes-modal__close:hover {
+  border-color: #fff;
+  background: #fff;
+  color: #0b0b0c;
+}
+
+.love-notes-modal__close:focus-visible {
+  outline: 2px solid #ff8298;
+  outline-offset: 3px;
+}
+
+.love-notes-modal__close svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.love-notes-modal__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 8px 24px 0;
+  list-style: none;
+}
+
+.love-notes-modal__item {
+  position: relative;
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 34px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  filter: blur(7px);
+  transform: translateY(16px);
+  animation: love-notes-item-in 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.love-notes-modal__item:nth-child(1) { animation-delay: 240ms; }
+.love-notes-modal__item:nth-child(2) { animation-delay: 420ms; }
+.love-notes-modal__item:nth-child(3) { animation-delay: 600ms; }
+.love-notes-modal__item:nth-child(4) { animation-delay: 780ms; }
+.love-notes-modal__item:nth-child(5) { animation-delay: 960ms; }
+.love-notes-modal__item:nth-child(6) { animation-delay: 1140ms; }
+
+.love-notes-modal__number {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  color: #ffd166;
+}
+
+.love-notes-modal__text {
+  min-width: 0;
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.love-notes-modal__heart {
+  display: block;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: #ff718b;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-origin: center;
+  animation: love-notes-heartbeat 2.4s ease-in-out infinite;
+}
+
+.love-notes-modal__item:nth-child(even) .love-notes-modal__heart {
+  animation-delay: 500ms;
+}
+
+.love-notes-modal__ending {
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 24px 22px;
+  opacity: 0;
+  animation: love-notes-ending-in 600ms 1420ms ease forwards;
+}
+
+.love-notes-modal__ending span {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2));
+}
+
+.love-notes-modal__ending span:last-child {
+  transform: scaleX(-1);
+}
+
+.love-notes-modal__ending svg {
+  width: 18px;
+  height: 18px;
+  fill: #ff718b;
+  stroke: none;
+}
+
+@keyframes album-love-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 12px rgba(255, 83, 116, 0.25); }
+  50% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 24px rgba(255, 83, 116, 0.62); }
+}
+
+@keyframes album-love-halo {
+  0%, 38% { opacity: 0; transform: scale(0.72); }
+  48% { opacity: 0.72; }
+  78%, 100% { opacity: 0; transform: scale(1.58); }
+}
+
+@keyframes album-love-icon {
+  0%, 36%, 100% { transform: rotate(0deg) scale(1); }
+  43% { transform: rotate(-10deg) scale(1.12); }
+  50% { transform: rotate(9deg) scale(1.12); }
+  57% { transform: rotate(-4deg) scale(1.04); }
+  64% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes album-love-spark {
+  from { opacity: 0.3; transform: scale(0.65); }
+  to { opacity: 1; transform: scale(1.18); }
+}
+
+@keyframes love-notes-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes love-notes-panel-in {
+  from { opacity: 0; filter: blur(12px); transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+}
+
+@keyframes love-notes-line-in {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes love-notes-item-in {
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes love-notes-heartbeat {
+  0%, 72%, 100% { transform: scale(1); }
+  78% { transform: scale(1.24); }
+  84% { transform: scale(0.94); }
+  90% { transform: scale(1.12); }
+}
+
+@keyframes love-notes-ending-in {
+  from { opacity: 0; transform: scaleX(0.75); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
 .floating-player__side-controls {
   display: flex;
   width: fit-content;
@@ -4708,7 +5040,7 @@ body {
       env(safe-area-inset-top) + (var(--mobile-header-content-height) - 34px) /
         2
     );
-    right: 58px;
+    right: 100px;
     z-index: 40;
     display: grid;
     width: 34px;
@@ -4740,6 +5072,35 @@ body {
     background: transparent;
     color: rgba(255, 255, 255, 0.92);
     cursor: pointer;
+  }
+
+  .mobile-header-love {
+    position: fixed;
+    top: calc(
+      env(safe-area-inset-top) + (var(--mobile-header-content-height) - 34px) /
+        2
+    );
+    right: 58px;
+    z-index: 40;
+    display: grid;
+    width: 34px;
+    height: 34px;
+    box-sizing: border-box;
+    place-items: center;
+    padding: 0;
+  }
+
+  .mobile-header-love.is-detail-open {
+    top: max(8px, env(safe-area-inset-top));
+    right: 116px;
+    z-index: 140;
+    width: 46px;
+    height: 46px;
+  }
+
+  .mobile-header-love.is-detail-open .album-love-button__icon {
+    width: 27px;
+    height: 27px;
   }
 
   .mobile-header-settings.is-detail-open {
@@ -6497,5 +6858,64 @@ body {
   .settings-modal__choice,
   .settings-modal__tab {
     flex: 1 1 0;
+  }
+
+  .love-notes-modal {
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 12px;
+  }
+
+  .love-notes-modal__panel {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .love-notes-modal__header {
+    min-height: 70px;
+    padding: 14px 14px 12px 18px;
+  }
+
+  .love-notes-modal__header h2 {
+    font-size: 21px;
+  }
+
+  .love-notes-modal__list {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .love-notes-modal__item {
+    min-height: 54px;
+    grid-template-columns: 28px minmax(0, 1fr) 17px;
+    gap: 9px;
+  }
+
+  .love-notes-modal__text {
+    font-size: 15px;
+  }
+
+  .love-notes-modal__ending {
+    padding: 16px 18px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .album-love-button::before,
+  .album-love-button__halo,
+  .album-love-button__icon,
+  .album-love-button__spark,
+  .love-notes-modal,
+  .love-notes-modal__panel,
+  .love-notes-modal__panel::before,
+  .love-notes-modal__heart {
+    animation: none;
+  }
+
+  .love-notes-modal__item,
+  .love-notes-modal__ending {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: none;
   }
 }

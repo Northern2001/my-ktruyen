@@ -829,6 +829,14 @@ const dockPinnedStorageKey = "mkt-dock-pinned";
 const mobileDockModeStorageKey = "mkt-mobile-dock-mode";
 const desktopSidePanelTransitionDuration = 420;
 const mobileSidePanelTransitionDuration = 500;
+const loveNotes = [
+  "Anh thích em cười",
+  "Anh thích nghe em hát",
+  "Anh thích ở bên em",
+  "Anh thích được nghe em kể chuyện",
+  "Anh thích cách em đối xử với em",
+  "Anh thích nắm tay em",
+] as const;
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
@@ -947,6 +955,27 @@ function ListMusicIcon() {
       <path d="M11 19H3" />
       <path d="M21 16V5" />
       <circle cx="18" cy="16" r="3" />
+    </svg>
+  );
+}
+
+function LoveNotesIcon() {
+  return (
+    <svg
+      className="album-love-button__icon"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8.25" />
+      <path d="M9.65 9.15a2.55 2.55 0 0 1 4.95.85c0 1.8-2.6 2.15-2.6 3.75" />
+      <path d="M12 17.25h.01" />
+      <path className="album-love-button__spark album-love-button__spark--one" d="M18.4 2.8v2.4M17.2 4h2.4" />
+      <path className="album-love-button__spark album-love-button__spark--two" d="M4.15 17.8v1.8M3.25 18.7h1.8" />
     </svg>
   );
 }
@@ -1112,6 +1141,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   const [pendingDisplayStyle, setPendingDisplayStyle] = useState<DisplayStyle>("museum");
   const [pendingDockPinned, setPendingDockPinned] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLoveNotesOpen, setIsLoveNotesOpen] = useState(false);
   const [isDisplayModeStatusVisible, setIsDisplayModeStatusVisible] = useState(false);
   const [areDetailButtonsVisible, setAreDetailButtonsVisible] = useState(true);
   const [detailNavigationPreview, setDetailNavigationPreview] = useState<"previous" | "next" | null>(null);
@@ -1265,6 +1295,19 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
     setIsSettingsOpen(false);
     scheduleFloatingPlayerHideAfterSettings();
   }, [scheduleFloatingPlayerHideAfterSettings]);
+
+  const handleLoveNotesOpen = useCallback(() => {
+    playClickSound();
+    setIsSettingsOpen(false);
+    setIsLoveNotesOpen(true);
+    resetSceneControlsVisibility();
+  }, [resetSceneControlsVisibility]);
+
+  const handleLoveNotesClose = useCallback(() => {
+    playClickSound();
+    setIsLoveNotesOpen(false);
+    resetSceneControlsVisibility();
+  }, [resetSceneControlsVisibility]);
 
   const resetLyricsAutoScrollPause = useCallback(() => {
     if (lyricsAutoScrollPauseTimeoutRef.current != null) {
@@ -2434,6 +2477,17 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   }, [isSettingsOpen]);
 
   useEffect(() => {
+    if (!isLoveNotesOpen) return;
+
+    const handleLoveNotesKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleLoveNotesClose();
+    };
+
+    window.addEventListener("keydown", handleLoveNotesKeyDown);
+    return () => window.removeEventListener("keydown", handleLoveNotesKeyDown);
+  }, [handleLoveNotesClose, isLoveNotesOpen]);
+
+  useEffect(() => {
     if (!isDownloadModalOpen) return;
 
     const handleDownloadModalKeyDown = (event: KeyboardEvent) => {
@@ -2791,6 +2845,20 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
 
       {isMobile && hasConfirmedAge && !isAgeGateOpen && (
         <button
+          className={`mobile-header-love album-love-button ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
+          type="button"
+          onClick={handleLoveNotesOpen}
+          onPointerDown={(event) => event.stopPropagation()}
+          aria-label="Xem những điều anh thích ở em"
+        >
+          <span className="album-love-button__halo" aria-hidden="true" />
+          <span className="album-love-button__halo album-love-button__halo--delayed" aria-hidden="true" />
+          <LoveNotesIcon />
+        </button>
+      )}
+
+      {isMobile && hasConfirmedAge && !isAgeGateOpen && (
+        <button
           className={`mobile-header-settings ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
           type="button"
           onClick={handleSettingsOpen}
@@ -2848,6 +2916,21 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
               </>
             )}
           </svg>
+        </button>
+      )}
+
+      {!isMobile && hasConfirmedAge && !isAgeGateOpen && (!selectedProject || isDetailMinimized) && (
+        <button
+          className={`desktop-header-love album-love-button ${!areSceneControlsVisible ? "is-hidden" : ""}`}
+          type="button"
+          onClick={handleLoveNotesOpen}
+          onPointerDown={(event) => event.stopPropagation()}
+          aria-label="Xem những điều anh thích ở em"
+          tabIndex={!areSceneControlsVisible ? -1 : 0}
+        >
+          <span className="album-love-button__halo" aria-hidden="true" />
+          <span className="album-love-button__halo album-love-button__halo--delayed" aria-hidden="true" />
+          <LoveNotesIcon />
         </button>
       )}
 
@@ -3095,6 +3178,54 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
                 LƯU
               </button>
             </footer>
+          </section>
+        </div>
+      )}
+      {isLoveNotesOpen && (
+        <div
+          className="love-notes-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="love-notes-modal-title"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) handleLoveNotesClose();
+          }}
+        >
+          <section className="love-notes-modal__panel" onPointerDown={(event) => event.stopPropagation()}>
+            <header className="love-notes-modal__header">
+              <h2 id="love-notes-modal-title">Điều anh thích ở em</h2>
+              <button
+                className="love-notes-modal__close"
+                type="button"
+                onClick={handleLoveNotesClose}
+                aria-label="Đóng những điều anh thích ở em"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m6 6 12 12" />
+                  <path d="m18 6-12 12" />
+                </svg>
+              </button>
+            </header>
+            <ol className="love-notes-modal__list">
+              {loveNotes.map((note, index) => (
+                <li className="love-notes-modal__item" key={note}>
+                  <span className="love-notes-modal__number" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="love-notes-modal__text">{note}</span>
+                  <svg className="love-notes-modal__heart" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+                  </svg>
+                </li>
+              ))}
+            </ol>
+            <div className="love-notes-modal__ending" aria-hidden="true">
+              <span />
+              <svg viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+              </svg>
+              <span />
+            </div>
           </section>
         </div>
       )}
