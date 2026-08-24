@@ -250,7 +250,6 @@ export function MemoryGallery() {
       panY: pan.y,
       moved: false,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
     setIsPanning(true);
   };
 
@@ -260,7 +259,10 @@ export function MemoryGallery() {
 
     const deltaX = event.clientX - drag.originX;
     const deltaY = event.clientY - drag.originY;
-    if (Math.hypot(deltaX, deltaY) > 5) drag.moved = true;
+    if (!drag.moved && Math.hypot(deltaX, deltaY) > 5) {
+      drag.moved = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
     setPan(clampPan({ x: drag.panX + deltaX, y: drag.panY + deltaY }));
   };
 

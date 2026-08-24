@@ -198,9 +198,7 @@ export function MKTTrackDetail(props: Record<string, unknown>) {
           />
           {!isDetailMinimized && (
             <div className="detail-copyright" aria-label="Ghi chú album">
-              {selectedTrack?.numberTrack <= 14
-                ? "MKT / KỶ NIỆM CỦA CHÚNG MÌNH"
-                : "© COPYRIGHT BY N0l4b3l / RPT MCK / ANTIANTIART"}
+              MKT / KỶ NIỆM CỦA CHÚNG MÌNH
             </div>
           )}
           <button
