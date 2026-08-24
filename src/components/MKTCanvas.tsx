@@ -125,13 +125,30 @@ function ItemCaption({
   const trackNumberLabel = getTrackLabel(item.numberTrack);
   const trackNumberWidth = trackNumberLabel.length * 0.0264;
   const metadataColor = isDarkTrackNumber(item.numberTrack) ? "#080808" : "#ffffff";
-  const captionColor = "#080808";
+  const captionColor = "#ffffff";
+  const captionOverlayHeight = hasSubtitle ? 0.22 : 0.13;
+  const captionOverlayTop = -0.05;
   const captionShadowOffsetX = "1.5%";
   const captionShadowOffsetY = "-2.5%";
   const captionShadowBlur = "3%";
 
   return (
     <group position={position} rotation={rotation}>
+      <mesh
+        position={[width / 2, captionOverlayTop - captionOverlayHeight / 2, -0.002]}
+        raycast={() => {}}
+        renderOrder={1}
+      >
+        <planeGeometry args={[width + 0.1, captionOverlayHeight]} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          opacity={0.62}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
       <Text
         font={geistMonoFontUrl}
         position={[0, 0, 0]}
@@ -213,7 +230,7 @@ function ItemCaption({
         fontSize={0.075}
         maxWidth={width}
         letterSpacing={0.01}
-        renderOrder={1}
+        renderOrder={2}
         depthOffset={-4}
         material-side={FrontSide}
         material-toneMapped={false}
@@ -236,7 +253,7 @@ function ItemCaption({
           fontSize={0.04}
           maxWidth={width - 0.2}
           letterSpacing={0.02}
-          renderOrder={1}
+          renderOrder={2}
           depthOffset={-4}
           material-side={FrontSide}
           material-toneMapped={false}
