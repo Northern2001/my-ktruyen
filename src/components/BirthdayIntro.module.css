@@ -190,49 +190,6 @@
   line-height: 1.65;
 }
 
-.countdown {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: min(600px, 100%);
-  margin-top: 34px;
-  border-top: 1px solid rgba(226, 209, 176, 0.24);
-  border-bottom: 1px solid rgba(226, 209, 176, 0.24);
-}
-
-.countdownPart {
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 94px;
-  padding: 15px 16px 13px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.countdownPart + .countdownPart {
-  border-left: 1px solid rgba(226, 209, 176, 0.16);
-}
-
-.countdownPart strong {
-  color: #fff8ef;
-  font-family: "Geist Mono", monospace;
-  font-size: 36px;
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-  line-height: 1;
-}
-
-.countdownPart span {
-  margin-top: 10px;
-  color: rgba(168, 197, 208, 0.78);
-  font-family: "Geist Mono", monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
 .gateForm {
   width: 100%;
   justify-self: end;
@@ -1442,15 +1399,6 @@
     font-size: 54px;
   }
 
-  .countdownPart {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .countdownPart strong {
-    font-size: 32px;
-  }
-
   .wishContent {
     width: min(650px, 72vw);
   }
@@ -1541,24 +1489,6 @@
     margin-top: 16px;
     font-size: 13.5px;
     line-height: 1.5;
-  }
-
-  .countdown {
-    margin-top: 22px;
-  }
-
-  .countdownPart {
-    min-height: 74px;
-    padding: 12px 8px 10px;
-  }
-
-  .countdownPart strong {
-    font-size: 27px;
-  }
-
-  .countdownPart span {
-    margin-top: 8px;
-    font-size: 8px;
   }
 
   .gateForm {
@@ -1810,20 +1740,6 @@
   .gateMessage {
     margin-top: 12px;
     font-size: 13px;
-  }
-
-  .countdown {
-    margin-top: 16px;
-  }
-
-  .countdownPart {
-    min-height: 64px;
-    padding-top: 9px;
-    padding-bottom: 8px;
-  }
-
-  .countdownPart strong {
-    font-size: 24px;
   }
 
   .wishScene {

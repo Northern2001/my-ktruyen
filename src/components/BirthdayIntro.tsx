@@ -8,9 +8,8 @@ import styles from "./BirthdayIntro.module.css";
 
 const birthdaySessionKey = "mkt-birthday-intro-2026";
 const birthdayCompletedKey = "mkt-birthday-intro-completed-2026";
-const birthdayGateKey = "mkt-birthday-preview-unlocked-2026";
+const birthdayGateKey = "mkt-birthday-private-unlocked-2026";
 const birthdayPassword = "emyeuanhphuongbac";
-const birthdayUnlockAt = Date.UTC(2026, 7, 25, 17);
 const birthdayHomeTrackIndex = 1;
 
 type IntroScene = "wish" | "cake" | "contents" | "video";
@@ -54,30 +53,6 @@ type FireworkRocket = {
   energy: number;
   color: string;
 };
-
-function getCountdownParts(remainingMs: number | null) {
-  if (remainingMs == null) {
-    return [
-      { label: "NGÀY", value: "--" },
-      { label: "GIỜ", value: "--" },
-      { label: "PHÚT", value: "--" },
-      { label: "GIÂY", value: "--" },
-    ];
-  }
-
-  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return [
-    { label: "NGÀY", value: String(days).padStart(2, "0") },
-    { label: "GIỜ", value: String(hours).padStart(2, "0") },
-    { label: "PHÚT", value: String(minutes).padStart(2, "0") },
-    { label: "GIÂY", value: String(seconds).padStart(2, "0") },
-  ];
-}
 
 function playClickSound() {
   window.dispatchEvent(new Event("mkt-click"));
@@ -300,7 +275,6 @@ export function BirthdayIntro() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [gateStatus, setGateStatus] = useState<GateStatus>("checking");
-  const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [scene, setScene] = useState<IntroScene>("wish");
@@ -537,48 +511,36 @@ export function BirthdayIntro() {
 
   useEffect(() => {
     let initializeFrame = 0;
-    let countdownInterval = 0;
-    let isPreviewUnlocked = false;
+    let isPrivateAccessUnlocked = false;
     let hasSeenIntro = false;
 
     try {
-      isPreviewUnlocked = window.localStorage.getItem(birthdayGateKey) === "unlocked";
+      isPrivateAccessUnlocked = window.localStorage.getItem(birthdayGateKey) === "unlocked";
       hasSeenIntro = window.localStorage.getItem(birthdayCompletedKey) === "seen"
         || window.sessionStorage.getItem(birthdaySessionKey) === "seen";
     } catch {
     }
 
-    const updateCountdown = () => {
-      const nextRemainingMs = Math.max(0, birthdayUnlockAt - Date.now());
-      setRemainingMs(nextRemainingMs);
-      if (nextRemainingMs === 0) {
-        window.clearInterval(countdownInterval);
-        revealBirthday();
-      }
-    };
-
     initializeFrame = window.requestAnimationFrame(() => {
-      if (hasSeenIntro) {
-        setIsVisible(false);
-        window.setTimeout(() => requestAlbumTrackPlayback(birthdayHomeTrackIndex), 0);
+      if (!isPrivateAccessUnlocked) {
+        setGateStatus("locked");
+        setIsInitialized(true);
         return;
       }
 
-      if (Date.now() < birthdayUnlockAt && !isPreviewUnlocked) {
-        setGateStatus("locked");
-        updateCountdown();
-        countdownInterval = window.setInterval(updateCountdown, 1000);
-      } else {
-        setGateStatus("unlocked");
-      }
+      setGateStatus("unlocked");
       setIsInitialized(true);
+
+      if (hasSeenIntro) {
+        setIsVisible(false);
+        window.setTimeout(() => requestAlbumTrackPlayback(birthdayHomeTrackIndex), 0);
+      }
     });
 
     return () => {
       window.cancelAnimationFrame(initializeFrame);
-      window.clearInterval(countdownInterval);
     };
-  }, [revealBirthday]);
+  }, []);
 
   useEffect(() => {
     const siteContent = document.getElementById("site-content");
@@ -628,7 +590,6 @@ export function BirthdayIntro() {
     : microphoneState === "listening"
       ? "Thổi vào micro"
       : "Thổi nến";
-  const countdownParts = getCountdownParts(remainingMs);
   const isGateOpen = gateStatus === "unlocked";
 
   return (
@@ -641,7 +602,7 @@ export function BirthdayIntro() {
       data-blown={isBlown}
       role="dialog"
       aria-modal="true"
-      aria-label={isGateOpen ? "Chúc mừng sinh nhật Mông Khánh Truyền" : "Món quà sinh nhật đang được khóa"}
+      aria-label={isGateOpen ? "Chúc mừng sinh nhật Mông Khánh Truyền" : "Không gian riêng của Khánh Truyền"}
     >
       <div className={styles.grain} aria-hidden="true" />
 
@@ -670,27 +631,18 @@ export function BirthdayIntro() {
                   <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
                 </svg>
               </div>
-              <p className={styles.gateEyebrow}>MKT / 26 · 08 · 2026</p>
+              <p className={styles.gateEyebrow}>MKT / PRIVATE ACCESS</p>
               <h1>
-                Món quà này
-                <span>chưa đến lúc mở.</span>
+                Chỉ Khánh Truyền
+                <span>mới có thể vào.</span>
               </h1>
               <p className={styles.gateMessage}>
-                Anh giữ nơi này kín đến đúng ngày của em. Một chút chờ đợi để điều bất ngờ trở nên trọn vẹn hơn.
+                Nơi này được giữ riêng cho em. Nhập mật khẩu để tiếp tục nhé.
               </p>
-
-              <div className={styles.countdown} aria-label="Đếm ngược đến ngày 26 tháng 8 năm 2026">
-                {countdownParts.map((part) => (
-                  <div className={styles.countdownPart} key={part.label} aria-hidden="true">
-                    <strong>{part.value}</strong>
-                    <span>{part.label}</span>
-                  </div>
-                ))}
-              </div>
             </div>
 
             <form className={styles.gateForm} onSubmit={handlePasswordSubmit}>
-              <label htmlFor="birthday-password">MẬT KHẨU MỞ SỚM</label>
+              <label htmlFor="birthday-password">MẬT KHẨU CỦA KHÁNH TRUYỀN</label>
               <div className={styles.gateInputRow}>
                 <div className={styles.gateInputShell}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
