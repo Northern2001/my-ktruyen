@@ -1619,10 +1619,11 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
       -2,
       Math.min(2, tubeSpinVelocity.current + horizontalDragDelta * 0.0025),
     );
-    tubeScrollTarget.current = Math.max(
-      -tubeScrollLimit,
-      Math.min(tubeScrollLimit, tubeScrollTarget.current + deltaY * 0.0033),
-    );
+    // The wave flows on forever, so its scroll is not clamped to the tube range.
+    tubeScrollTarget.current =
+      displayStyle === "wave"
+        ? tubeScrollTarget.current + deltaY * 0.0033
+        : Math.max(-tubeScrollLimit, Math.min(tubeScrollLimit, tubeScrollTarget.current + deltaY * 0.0033));
     const now = performance.now();
     if (now - lastDragSoundAt.current >= 60) {
       lastDragSoundAt.current = now;
@@ -1689,10 +1690,11 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   const onWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
     resetSceneControlsVisibility();
     const scrollDelta = event.deltaY;
-    tubeScrollTarget.current = Math.max(
-      -tubeScrollLimit,
-      Math.min(tubeScrollLimit, tubeScrollTarget.current - scrollDelta * tubeWheelScrollFactor),
-    );
+    const nextScrollTarget = tubeScrollTarget.current - scrollDelta * tubeWheelScrollFactor;
+    tubeScrollTarget.current =
+      displayStyle === "wave"
+        ? nextScrollTarget
+        : Math.max(-tubeScrollLimit, Math.min(tubeScrollLimit, nextScrollTarget));
     tubeSpinVelocity.current = Math.max(
       -2,
       Math.min(2, tubeSpinVelocity.current - scrollDelta * 0.0035),
@@ -1704,7 +1706,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
 
     if (scrollDelta < 0) tubeNaturalDir.current = 1;
     else if (scrollDelta > 0) tubeNaturalDir.current = -1;
-  }, [resetSceneControlsVisibility]);
+  }, [displayStyle, resetSceneControlsVisibility]);
 
   const handleMobileTrackListScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -2428,7 +2430,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
       setIsMobile(mobile);
       const storedDisplayStyle = window.localStorage.getItem(displayStyleStorageKey);
       setDisplayStyle(
-        storedDisplayStyle === "list" || storedDisplayStyle === "art"
+        storedDisplayStyle === "list" || storedDisplayStyle === "art" || storedDisplayStyle === "wave"
           ? storedDisplayStyle
           : "museum",
       );
@@ -2693,7 +2695,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   return (
     <div className="sceneRoot">
       <div
-        className={`sceneRoot__content ${displayStyle === "art" ? "is-art-style" : ""} ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
+        className={`sceneRoot__content ${displayStyle === "art" ? "is-art-style" : ""} ${displayStyle === "wave" ? "is-wave-style" : ""} ${selectedProject && !isDetailMinimized ? "is-detail-open" : ""}`}
         style={{ touchAction: displayStyle === "list" ? undefined : "none" }}
         onPointerDown={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : onPointerDown}
         onPointerMove={displayStyle === "list" || (selectedProject && !isDetailMinimized) ? undefined : handleScenePointerMove}
@@ -3097,7 +3099,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
             </header>
 
             <div className="settings-modal__list">
-              <div className="settings-modal__row">
+              <div className="settings-modal__row settings-modal__row--style">
                 <span className="settings-modal__label">Phong Cách</span>
                 <div className="settings-modal__choices" role="group" aria-label="Phong cách hiển thị">
                   <button
@@ -3115,6 +3117,14 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
                     aria-pressed={pendingDisplayStyle === "art"}
                   >
                     <span>BẢO TÀNG</span>
+                  </button>
+                  <button
+                    className={`settings-modal__choice ${pendingDisplayStyle === "wave" ? "is-selected" : ""}`}
+                    type="button"
+                    onClick={() => handleSettingsDisplayStyleChange("wave")}
+                    aria-pressed={pendingDisplayStyle === "wave"}
+                  >
+                    <span>DÒNG CHẢY</span>
                   </button>
                   <button
                     className={`settings-modal__choice ${pendingDisplayStyle === "list" ? "is-selected" : ""}`}

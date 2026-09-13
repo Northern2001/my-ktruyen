@@ -8,6 +8,7 @@ const menuItems = [
   { href: "/", label: "Album", index: "01" },
   { href: "/memory/", label: "Memory", index: "02" },
   { href: "/mp3/", label: "MP3", index: "03" },
+  { href: "/inlove/", label: "InLove", index: "04" },
 ] as const;
 
 export function AppMenu() {

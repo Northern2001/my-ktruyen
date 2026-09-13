@@ -3278,6 +3278,18 @@ body {
   min-width: 42px;
 }
 
+/* Four display styles no longer fit on one line, so they pair up instead. */
+.settings-modal__row--style {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.settings-modal__row--style .settings-modal__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .love-notes-modal {
   position: fixed;
   inset: 0;
@@ -6917,5 +6929,568 @@ body {
     filter: none;
     transform: none;
     animation: none;
+  }
+}
+
+.inlove-page {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: #080808;
+  color: #fff;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.inlove-page__ambient {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  overflow: hidden;
+  background: #080808;
+  pointer-events: none;
+}
+
+.inlove-page__ambient img {
+  object-fit: cover;
+  object-position: 50% 28%;
+  opacity: 0.42;
+  filter: saturate(0.78) contrast(1.04) blur(3px);
+  transform: scale(1.04);
+  animation: inlove-ambient-in 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inlove-page__ambient::after {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(120, 25, 25, 0.34), transparent 62%),
+    linear-gradient(180deg, rgba(8, 8, 8, 0.58) 0%, rgba(8, 8, 8, 0.88) 48%, #080808 100%);
+  content: "";
+}
+
+@keyframes inlove-ambient-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+.inlove-hearts {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.inlove-hearts span {
+  position: absolute;
+  bottom: -60px;
+  display: block;
+  width: 22px;
+  height: 22px;
+  color: rgba(192, 57, 47, 0.42);
+  animation-name: inlove-heart-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.inlove-hearts svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: none;
+}
+
+@keyframes inlove-heart-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-104dvh) scale(0.9);
+  }
+}
+
+.inlove-page__header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 146px;
+  box-sizing: border-box;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 30px 36px 22px 86px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.inlove-page__eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: #c98d8d;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.inlove-page__heading h1 {
+  margin: 0;
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 51px;
+  font-weight: 400;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.inlove-page__summary {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.inlove-page__summary span {
+  padding: 0 13px;
+}
+
+.inlove-page__summary span + span {
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.inlove-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(1000px, calc(100% - 72px));
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 46px;
+  margin: 0 auto;
+  padding: 54px 0 72px;
+}
+
+.inlove-couple {
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 20px;
+}
+
+.inlove-avatar {
+  display: flex;
+  width: 100%;
+  max-width: 240px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  animation: inlove-avatar-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inlove-couple .inlove-avatar:last-of-type {
+  animation-delay: 140ms;
+}
+
+@keyframes inlove-avatar-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.inlove-avatar__frame {
+  position: relative;
+  width: min(34vw, 200px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  background: #101010;
+  box-shadow: 0 0 0 1px rgba(120, 25, 25, 0.32), 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.inlove-avatar__frame img {
+  object-fit: cover;
+}
+
+.inlove-avatar figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+}
+
+.inlove-avatar__role {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+.inlove-avatar__name {
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.inlove-couple__link {
+  display: flex;
+  height: min(34vw, 200px);
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.inlove-couple__line {
+  display: block;
+  width: clamp(14px, 5vw, 54px);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.34));
+}
+
+.inlove-couple__line:last-child {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+}
+
+.inlove-couple__heart {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #c0392f;
+  animation: inlove-heartbeat 1.8s ease-in-out infinite;
+}
+
+.inlove-couple__heart svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: none;
+  filter: drop-shadow(0 0 10px rgba(192, 57, 47, 0.55));
+}
+
+@keyframes inlove-heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.18);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.12);
+  }
+  56% {
+    transform: scale(1);
+  }
+}
+
+.inlove-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 34px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 8, 8, 0.54);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  text-align: center;
+}
+
+.inlove-counter__label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+}
+
+.inlove-counter__value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+}
+
+.inlove-counter__value strong {
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: clamp(72px, 15vw, 150px);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.inlove-counter__value span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+}
+
+.inlove-counter__clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.inlove-counter__clock span {
+  min-width: 36px;
+  padding: 5px 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.inlove-counter__clock i {
+  color: rgba(255, 255, 255, 0.3);
+  font-style: normal;
+}
+
+.inlove-counter__note {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+.inlove-breakdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.inlove-breakdown__cell {
+  display: flex;
+  min-height: 92px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 18px;
+}
+
+.inlove-breakdown__cell + .inlove-breakdown__cell {
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.inlove-breakdown__label {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+.inlove-breakdown__value {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.inlove-milestones {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.inlove-milestones__header {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+.inlove-milestones__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inlove-milestone {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 18px;
+}
+
+.inlove-milestone + .inlove-milestone {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inlove-milestone__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.inlove-milestone__label {
+  font-family: "Google Sans Flex", sans-serif;
+  font-size: 19px;
+}
+
+.inlove-milestone__left {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.inlove-milestone__bar {
+  position: relative;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.inlove-milestone__bar i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  height: 100%;
+  background: #c0392f;
+  transition: width 420ms ease;
+}
+
+.inlove-milestone__date {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
+
+.inlove-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+@media (pointer: coarse), (max-width: 700px) {
+  .inlove-page__header {
+    min-height: 128px;
+    gap: 16px;
+    padding: calc(60px + env(safe-area-inset-top)) 14px 16px 62px;
+  }
+
+  .inlove-page__eyebrow {
+    margin-bottom: 7px;
+    font-size: 7px;
+  }
+
+  .inlove-page__heading h1 {
+    font-size: 30px;
+  }
+
+  .inlove-page__summary {
+    min-height: 32px;
+    border: 0;
+  }
+
+  .inlove-page__summary span {
+    padding: 0;
+  }
+
+  .inlove-page__summary span + span {
+    display: none;
+  }
+
+  .inlove-stage {
+    width: 100%;
+    gap: 32px;
+    /* Clears the floating sound button parked in the bottom-left corner. */
+    padding: 26px 18px calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .inlove-couple {
+    gap: 10px;
+  }
+
+  .inlove-avatar {
+    gap: 12px;
+  }
+
+  .inlove-avatar__frame {
+    width: min(32vw, 132px);
+  }
+
+  .inlove-couple__link {
+    height: min(32vw, 132px);
+    gap: 6px;
+  }
+
+  .inlove-couple__line {
+    width: clamp(8px, 3vw, 20px);
+  }
+
+  .inlove-couple__heart {
+    width: 26px;
+    height: 26px;
+  }
+
+  .inlove-avatar__name {
+    font-size: 20px;
+  }
+
+  .inlove-counter {
+    gap: 12px;
+    padding: 26px 16px;
+  }
+
+  .inlove-counter__value {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .inlove-breakdown {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inlove-breakdown__cell:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .inlove-breakdown__cell:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .inlove-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inlove-hearts span,
+  .inlove-couple__heart,
+  .inlove-avatar,
+  .inlove-page__ambient img {
+    animation: none;
+  }
+
+  .inlove-avatar {
+    opacity: 1;
+    transform: none;
   }
 }
