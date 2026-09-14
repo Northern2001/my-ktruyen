@@ -29,6 +29,7 @@ import type {
   DisplayStyle,
   GalleryItem,
   RepeatMode,
+  TrackOwner,
   TrackPresentation,
 } from "./mkt-types";
 import { MKTTrackList } from "./MKTTrackList";
@@ -39,11 +40,12 @@ import { useMediaPlayback } from "./MediaPlaybackCoordinator";
 import { playAlbumTrackEvent, type PlayAlbumTrackDetail } from "../lib/media-events";
 import { sitePath } from "../lib/site-path";
 
-type GalleryItemSeed = Omit<GalleryItem, "pMobileBackground" | "bMobileBackground"> & Partial<Pick<GalleryItem, "pMobileBackground" | "bMobileBackground">>;
+type GalleryItemSeed = Omit<GalleryItem, "pMobileBackground" | "bMobileBackground" | "owner"> & Partial<Pick<GalleryItem, "pMobileBackground" | "bMobileBackground">>;
 
-function withGalleryDefaults(items: readonly GalleryItemSeed[]): readonly GalleryItem[] {
+function withGalleryDefaults(owner: TrackOwner, items: readonly GalleryItemSeed[]): readonly GalleryItem[] {
   return items.map((item) => ({
     ...item,
+    owner,
     imageUrl: sitePath(item.imageUrl),
     audioUrl: sitePath(item.audioUrl),
     videoUrl: item.videoUrl ? sitePath(item.videoUrl) : undefined,
@@ -52,7 +54,8 @@ function withGalleryDefaults(items: readonly GalleryItemSeed[]): readonly Galler
   }));
 }
 
-const replacementGalleryItems = withGalleryDefaults([
+// Nhạc của Truyền.
+const truyenGalleryItems = withGalleryDefaults("truyen", [
   {
     numberTrack: 1,
     durationSeconds: 183.336,
@@ -324,28 +327,20 @@ const replacementGalleryItems = withGalleryDefaults([
   },
 ] satisfies readonly GalleryItemSeed[]);
 
-const legacyGalleryItems = withGalleryDefaults(
+// Nhạc của Bắc — album HVL, khớp 1-1 với 30 file FLAC gốc.
+const bacGalleryItems = withGalleryDefaults(
+"bac",
 [
   {
-    numberTrack: 0,
-    durationSeconds: null,
-    title: "MKT",
-    subtitle: "MKT",
-    imageUrl: "/images/mkt/IMG_3259.jpg",
-    bMobileBackground: 0.6,
-    audioUrl: "/music/SOS.mp3",
-    type: "stream",
-  },
-  {
     numberTrack: 1,
-    durationSeconds: null,
+    durationSeconds: 87,
     title: "Elegie",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/IMG_3259.jpg",
     pMobileBackground: "right",
     bMobileBackground: 0.6,
-    audioUrl: "/music/elegie.mp3",
-    type: "stream",
+    audioUrl: "/music/hvl/elegie.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 2,
@@ -462,14 +457,14 @@ const legacyGalleryItems = withGalleryDefaults(
   },
   {
     numberTrack: 5,
-    durationSeconds: null,
+    durationSeconds: 173.402676,
     title: "Baby",
     subtitle: "RPT MCK, marzuz",
     imageUrl: "/images/mkt/IMG_7649.jpg",
     bMobileBackground: 0.6,
     pMobileBackground: "right",
-    audioUrl: "/music/baby.mp3?v=0133-0148",
-    type: "stream",
+    audioUrl: "/music/hvl/baby.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 6,
@@ -528,22 +523,22 @@ const legacyGalleryItems = withGalleryDefaults(
   },
   {
     numberTrack: 7,
-    durationSeconds: null,
+    durationSeconds: 192.485351,
     title: "Mắt Môi Tay Chân",
     subtitle: "RPT MCK, Tage",
     imageUrl: "/images/mkt/cover-008.jpg",
     bMobileBackground: 0.6,
-    audioUrl: "/music/mat-moi-tay-chan.mp3",
-    type: "stream",
+    audioUrl: "/music/hvl/mat-moi-tay-chan.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 8,
-    durationSeconds: null,
+    durationSeconds: 124.469342,
     title: "Đao Của Anh Vừa",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-019.jpg",
-    audioUrl: "/music/dao-cua-anh-vua.mp3?v=0013-8-0037-6",
-    type: "stream",
+    audioUrl: "/music/hvl/dao-cua-anh-vua.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 9,
@@ -566,23 +561,23 @@ const legacyGalleryItems = withGalleryDefaults(
   },
   {
     numberTrack: 10,
-    durationSeconds: null,
+    durationSeconds: 213.717347,
     title: "Night In Prague",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-026.jpg",
     bMobileBackground: 0.35,
-    audioUrl: "/music/night-in-prague.mp3",
-    type: "stream",
+    audioUrl: "/music/hvl/night-in-prague.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 11,
-    durationSeconds: null,
+    durationSeconds: 201.781338,
     title: "Một Cái Ôm",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-028.jpg",
     bMobileBackground: 0.6,
-    audioUrl: "/music/mot-cai-om.mp3?v=0100-0126-7",
-    type: "stream",
+    audioUrl: "/music/hvl/mot-cai-om.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 12,
@@ -597,23 +592,23 @@ const legacyGalleryItems = withGalleryDefaults(
   },
   {
     numberTrack: 13,
-    durationSeconds: null,
+    durationSeconds: 317.972336,
     title: "Nếu Như Ta Chẳng Còn",
     subtitle: "RPT MCK, A$AP Ướt Mi",
     imageUrl: "/images/mkt/cover-040.jpg",
     pMobileBackground: "right",
-    audioUrl: "/music/neu-nhu-ta-chang-con.mp3?v=0109-0130",
-    type: "stream",
+    audioUrl: "/music/hvl/neu-nhu-ta-chang-con.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 14,
-    durationSeconds: null,
+    durationSeconds: 191.82,
     title: "Ai Mới Là Kẻ Xấu Xa",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-051.jpg",
     bMobileBackground: 0.6,
-    audioUrl: "/music/ai-moi-la-ke-xau-xa.mp3?v=0158-0225",
-    type: "stream",
+    audioUrl: "/music/hvl/ai-moi-la-ke-xau-xa.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 15,
@@ -769,33 +764,33 @@ const legacyGalleryItems = withGalleryDefaults(
   },
   {
     numberTrack: 27,
-    durationSeconds: null,
+    durationSeconds: 156.221338,
     title: "Không Cần Lo Cho Tao",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-098.jpg",
     bMobileBackground: 0.35,
-    audioUrl: "/music/khong-can-lo-cho-tao.mp3?v=0113-0133-2",
-    type: "stream",
+    audioUrl: "/music/hvl/khong-can-lo-cho-tao.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 28,
-    durationSeconds: null,
+    durationSeconds: 251.789342,
     title: "Huh",
     subtitle: "RPT MCK, RPT Orijinn, THANHDRAW",
     imageUrl: "/images/mkt/cover-099.jpg",
     bMobileBackground: 0.35,
-    audioUrl: "/music/huh.mp3?v=0321-0334",
-    type: "stream",
+    audioUrl: "/music/hvl/huh.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 29,
-    durationSeconds: null,
+    durationSeconds: 242.144014,
     title: "Nguyễn Văn Mười",
     subtitle: "RPT MCK",
     imageUrl: "/images/mkt/cover-100.jpg",
     bMobileBackground: 0.6,
-    audioUrl: "/music/nguyen-van-muoi.mp3",
-    type: "stream",
+    audioUrl: "/music/hvl/nguyen-van-muoi.mp3",
+    type: "pulled",
   },
   {
     numberTrack: 30,
@@ -810,16 +805,23 @@ const legacyGalleryItems = withGalleryDefaults(
   ] satisfies readonly GalleryItemSeed[],
 );
 
-const galleryItems: readonly GalleryItem[] = [
-  ...replacementGalleryItems,
-  ...legacyGalleryItems.filter((item) => item.numberTrack >= 31),
-];
-const playableTrackCount = galleryItems.filter((item) => item.type === "pulled").length;
+// Hai bộ nằm chung một mảng và được lọc theo `owner`, nhờ vậy mọi nơi vẫn tham
+// chiếu bài hát bằng chỉ số trong `galleryItems`. Truyền đứng trước để chỉ số
+// của bộ này giữ nguyên như cũ (xem `birthdayHomeTrackIndex` ở BirthdayIntro).
+const galleryItems: readonly GalleryItem[] = [...truyenGalleryItems, ...bacGalleryItems];
+const trackCountByOwner: Record<TrackOwner, number> = {
+  truyen: truyenGalleryItems.length,
+  bac: bacGalleryItems.length,
+};
 
 const tubeCols = Math.min(7, galleryItems.length);
-const tubeRows = Math.ceil(galleryItems.length / tubeCols);
 const tubeRowSpacing = 1.85;
-const tubeScrollLimit = ((tubeRows - 1) * tubeRowSpacing) / 2;
+// Tầm cuộn phải tính theo bộ đang xem, không theo cả hai bộ gộp lại, nếu không
+// sẽ cuộn ra ngoài vùng có ảnh.
+function getTubeScrollLimit(displayMode: DisplayMode) {
+  const rows = Math.ceil(trackCountByOwner[displayMode] / tubeCols);
+  return ((rows - 1) * tubeRowSpacing) / 2;
+}
 const tubeWheelScrollFactor = 0.00075;
 const mobileMediaQuery = "(pointer: coarse), (max-width: 1199px)";
 const autoNextDelaySeconds = 15;
@@ -869,7 +871,7 @@ function getNextTrack(startIndex: number, displayMode: DisplayMode) {
     const index = (startIndex + offset) % galleryItems.length;
     const track = galleryItems[index];
 
-    if (displayMode === "full" || track.type === "pulled") return { index, track };
+    if (track.owner === displayMode) return { index, track };
   }
 
   return null;
@@ -880,7 +882,7 @@ function getPreviousTrack(startIndex: number, displayMode: DisplayMode) {
     const index = (startIndex - offset + galleryItems.length) % galleryItems.length;
     const track = galleryItems[index];
 
-    if (displayMode === "full" || track.type === "pulled") return { index, track };
+    if (track.owner === displayMode) return { index, track };
   }
 
   return null;
@@ -1133,11 +1135,12 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   const [duration, setDuration] = useState(0);
   const isAgeGateOpen = false;
   const hasConfirmedAge = true;
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("pulled");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("truyen");
+  const tubeScrollLimit = getTubeScrollLimit(displayMode);
   const [displayStyle, setDisplayStyle] = useState<DisplayStyle>("museum");
   const [isDockPinned, setIsDockPinned] = useState(false);
   const streamDisplayDelay = autoNextDelaySeconds;
-  const [pendingDisplayMode, setPendingDisplayMode] = useState<DisplayMode>("pulled");
+  const [pendingDisplayMode, setPendingDisplayMode] = useState<DisplayMode>("truyen");
   const [pendingDisplayStyle, setPendingDisplayStyle] = useState<DisplayStyle>("museum");
   const [pendingDockPinned, setPendingDockPinned] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -1248,7 +1251,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
   const handleDisplayModeToggle = useCallback(() => {
     playClickSound();
     setDisplayMode((currentMode) => {
-      const nextMode = currentMode === "full" ? "pulled" : "full";
+      const nextMode = currentMode === "truyen" ? "bac" : "truyen";
       window.localStorage.setItem(displayModeStorageKey, nextMode);
       return nextMode;
     });
@@ -1637,7 +1640,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
       }
       suppressImageClickUntil.current = performance.now() + 250;
     }
-  }, [displayStyle]);
+  }, [displayStyle, tubeScrollLimit]);
 
   const handleScenePointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -1706,7 +1709,7 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
 
     if (scrollDelta < 0) tubeNaturalDir.current = 1;
     else if (scrollDelta > 0) tubeNaturalDir.current = -1;
-  }, [displayStyle, resetSceneControlsVisibility]);
+  }, [displayStyle, resetSceneControlsVisibility, tubeScrollLimit]);
 
   const handleMobileTrackListScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -2456,8 +2459,12 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
 
   useEffect(() => {
     const storedDisplayMode = window.localStorage.getItem(displayModeStorageKey);
-    if (storedDisplayMode === "full" || storedDisplayMode === "pulled") {
+    if (storedDisplayMode === "truyen" || storedDisplayMode === "bac") {
       setDisplayMode(storedDisplayMode);
+    } else if (storedDisplayMode != null) {
+      // Máy đã lưu lựa chọn cũ ("full" / "pulled") thì đưa về nhạc của Truyền,
+      // nếu không sẽ mở lên thấy màn hình trống.
+      window.localStorage.setItem(displayModeStorageKey, "truyen");
     }
 
     const storedDockPinned = window.localStorage.getItem(dockPinnedStorageKey);
@@ -2805,12 +2812,11 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
               event.stopPropagation();
               resetSceneControlsVisibility();
             }}
-            aria-label={displayMode === "full" ? "Chỉ hiển thị các bài có nhạc" : "Hiển thị toàn bộ album"}
-            aria-pressed={displayMode === "pulled"}
+            aria-label={displayMode === "bac" ? "Chuyển sang nhạc của Truyền" : "Chuyển sang nhạc của Bắc"}
             tabIndex={areSceneControlsVisible ? 0 : -1}
           >
             <span className="display-mode-toggle__status" aria-hidden="true">
-              {displayMode === "full" ? "FULL ALBUM" : "BÀI ĐÃ CÓ"}
+              {displayMode === "bac" ? "NHẠC CỦA BẮC" : "NHẠC CỦA TRUYỀN"}
             </span>
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
               <path d="M11 12H3" />
@@ -2829,11 +2835,10 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
           type="button"
           onClick={handleDisplayModeToggle}
           onPointerDown={(event) => event.stopPropagation()}
-          aria-label={displayMode === "full" ? "Chỉ hiển thị các bài có nhạc" : "Hiển thị toàn bộ album"}
-          aria-pressed={displayMode === "pulled"}
+          aria-label={displayMode === "bac" ? "Chuyển sang nhạc của Truyền" : "Chuyển sang nhạc của Bắc"}
         >
           <span className="display-mode-toggle__status" aria-hidden="true">
-            {displayMode === "full" ? "FULL ALBUM" : "BÀI ĐÃ CÓ"}
+            {displayMode === "bac" ? "NHẠC CỦA BẮC" : "NHẠC CỦA TRUYỀN"}
           </span>
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
             <path d="M11 12H3" />
@@ -3139,22 +3144,22 @@ export function MKTScreen({ isActive = true }: { isActive?: boolean }) {
 
               <div className="settings-modal__row">
                 <span className="settings-modal__label">Hiển Thị</span>
-                <div className="settings-modal__choices" role="group" aria-label="Chế độ hiển thị">
+                <div className="settings-modal__choices" role="group" aria-label="Chọn bộ nhạc">
                   <button
-                    className={`settings-modal__choice ${pendingDisplayMode === "pulled" ? "is-selected" : ""}`}
+                    className={`settings-modal__choice ${pendingDisplayMode === "truyen" ? "is-selected" : ""}`}
                     type="button"
-                    onClick={() => handleSettingsDisplayModeChange("pulled")}
-                    aria-pressed={pendingDisplayMode === "pulled"}
+                    onClick={() => handleSettingsDisplayModeChange("truyen")}
+                    aria-pressed={pendingDisplayMode === "truyen"}
                   >
-                    <span>BÀI ĐÃ CÓ ({playableTrackCount})</span>
+                    <span>NHẠC CỦA TRUYỀN ({trackCountByOwner.truyen})</span>
                   </button>
                   <button
-                    className={`settings-modal__choice ${pendingDisplayMode === "full" ? "is-selected" : ""}`}
+                    className={`settings-modal__choice ${pendingDisplayMode === "bac" ? "is-selected" : ""}`}
                     type="button"
-                    onClick={() => handleSettingsDisplayModeChange("full")}
-                    aria-pressed={pendingDisplayMode === "full"}
+                    onClick={() => handleSettingsDisplayModeChange("bac")}
+                    aria-pressed={pendingDisplayMode === "bac"}
                   >
-                    <span>FULL ALBUM ({galleryItems.length})</span>
+                    <span>NHẠC CỦA BẮC ({trackCountByOwner.bac})</span>
                   </button>
                 </div>
               </div>

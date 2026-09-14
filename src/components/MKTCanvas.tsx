@@ -473,7 +473,7 @@ function ImageTube({
   );
 
   const activeItems = useMemo(
-    () => items.map((item, index) => ({ item, index })).filter(({ item }) => tubeLayoutMode === "full" || item.type === "pulled"),
+    () => items.map((item, index) => ({ item, index })).filter(({ item }) => item.owner === tubeLayoutMode),
     [tubeLayoutMode],
   );
   const isWave = displayStyle === "wave";
@@ -845,7 +845,6 @@ function ImageTube({
             const captionWidth = Math.min(tileW - captionPadding * 2, 1.35);
             const openImageDetail = (event: ThreeEvent<PointerEvent>) => {
               event.stopPropagation();
-              if (displayMode === "pulled" && item.type === "stream") return;
               const now = performance.now();
               if (now < suppressClickUntilRef.current || now - lastItemActivationAt.current < 100) return;
               lastItemActivationAt.current = now;

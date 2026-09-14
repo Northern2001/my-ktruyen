@@ -64,17 +64,18 @@ export function MKTTrackList({
     }, 750);
   };
 
+  // `onSelect` cần chỉ số trong toàn bộ `items`, nên giữ lại chỉ số gốc khi lọc.
+  const activeItems = items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.owner === displayMode);
+
   return (
-    <div
-      className={`mobile-track-list ${displayMode === "pulled" ? "is-pulled-only" : ""}`}
-      onScroll={onScroll}
-    >
-      {items.map((item, index) => (
+    <div className="mobile-track-list" onScroll={onScroll}>
+      {activeItems.map(({ item, index }) => (
         <button
           className={`mobile-track-list__item ${item.type === "stream" ? "has-platforms is-stream" : ""} ${activatingIndex === index ? "is-activating" : ""} ${playingTrackIndex === index ? "is-playing" : ""}`}
           key={`${item.title}-${index}`}
           type="button"
-          disabled={displayMode === "pulled" && item.type === "stream"}
           onClick={() => {
             handleSelect(item, index);
           }}
