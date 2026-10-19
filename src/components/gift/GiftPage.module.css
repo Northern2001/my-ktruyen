@@ -186,7 +186,6 @@
 .ghostButton:focus-visible,
 .voucherUse:focus-visible,
 .music:focus-visible,
-.voucherFlip:focus-visible,
 .gameCard:focus-visible {
   outline: 2px solid var(--rose);
   outline-offset: 3px;
@@ -315,128 +314,111 @@
   line-height: 1.6;
 }
 
-/* ---------- vouchers ---------- */
+/* ---------- voucher wheel ---------- */
 
-.vouchers {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 22px 18px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.voucher {
+.wheelBox {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 18px;
 }
 
-.voucherFlip {
+.wheelStage {
   position: relative;
-  height: 190px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  text-align: left;
-  perspective: 900px;
+  width: min(84vw, 340px);
+  aspect-ratio: 1;
+}
+
+.wheelSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 8px 28px rgba(194, 65, 92, 0.35));
+}
+
+.wheelRotor {
+  transform-origin: 50% 50%;
+  transition: transform 4600ms cubic-bezier(0.12, 0.7, 0.1, 1);
+}
+
+.wheelPointer {
+  position: absolute;
+  z-index: 2;
+  top: -10px;
+  left: 50%;
+  width: 22px;
+  height: 28px;
+  fill: var(--rose);
+  stroke: #1a0a0e;
+  stroke-width: 1.5;
+  transform: translateX(-50%);
+}
+
+.wheelHub {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 2px solid var(--rose);
+  border-radius: 50%;
+  background: #1a0a0e;
+  color: var(--rose);
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
-.voucherFace {
-  position: absolute;
-  inset: 0;
+.wheelHub:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.wheelHub:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 3px;
+}
+
+.wheelResult {
   display: flex;
+  min-height: 150px;
   box-sizing: border-box;
+  width: min(100%, 420px);
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 18px;
-  border: 1px solid rgba(244, 166, 184, 0.35);
-  backface-visibility: hidden;
-  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
 }
 
-.voucherFront {
-  align-items: center;
-  justify-content: space-between;
-  background:
-    linear-gradient(145deg, rgba(232, 120, 143, 0.28), rgba(194, 65, 92, 0.12)),
-    rgba(20, 8, 12, 0.9);
-}
-
-.voucherBack {
-  justify-content: center;
-  background: rgba(244, 166, 184, 0.1);
-  transform: rotateY(180deg);
-}
-
-.isFlipped .voucherFront {
-  transform: rotateY(-180deg);
-}
-
-.isFlipped .voucherBack {
-  transform: rotateY(0deg);
-}
-
-.voucherIndex,
-.voucherTap {
-  align-self: flex-start;
-  color: var(--rose-muted);
-  font-family: "Geist Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-}
-
-.voucherTap {
-  align-self: center;
-}
-
-.voucherHeart {
-  width: 44px;
-  height: 44px;
-  fill: var(--rose-strong);
-  animation: gift-beat 1.8s ease-in-out infinite;
-}
-
-@keyframes gift-beat {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.14);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.08);
-  }
-}
-
-.voucherBack strong {
+.wheelResult strong {
   font-family: "Google Sans Flex", sans-serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 400;
-  line-height: 1.2;
+  color: #fff;
 }
 
-.voucherBack span:not(.voucherIndex) {
-  color: rgba(255, 255, 255, 0.66);
+.wheelResult span:not(.sectionLabel) {
+  color: rgba(255, 255, 255, 0.62);
   font-family: "Google Sans Flex", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
 }
 
-.isUsed .voucherBack {
+.wheelResult.isUsed strong {
+  text-decoration: line-through;
   opacity: 0.5;
 }
 
 .voucherStamp {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
   padding: 4px 8px;
   border: 1px solid var(--rose);
   color: var(--rose);
@@ -444,17 +426,11 @@
   font-size: 9px;
   font-style: normal;
   letter-spacing: 0.08em;
-  transform: rotate(-6deg);
 }
 
 .voucherUse {
   min-height: 38px;
   padding: 0 14px;
-}
-
-.voucherUse:disabled {
-  opacity: 0.3;
-  cursor: default;
 }
 
 /* ---------- match game ---------- */
@@ -584,10 +560,6 @@
     right: 14px;
   }
 
-  .vouchers {
-    grid-template-columns: 1fr;
-  }
-
   .gameGrid {
     gap: 8px;
   }
@@ -600,13 +572,12 @@
   .letter p,
   .reward,
   .scrollHint,
-  .voucherHeart,
   .rewardHeart,
   .isPlaying .musicBars i {
     animation: none;
   }
 
-  .voucherFace,
+  .wheelRotor,
   .gameBack,
   .gameFront {
     transition: none;

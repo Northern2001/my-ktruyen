@@ -17,7 +17,6 @@ import {
   giftLetter,
   giftMusic,
   giftVouchers,
-  type GiftVoucher,
 } from "./giftContent";
 import {
   defaultFlowers,
@@ -79,55 +78,135 @@ function HeartIcon({ className }: { className?: string }) {
   );
 }
 
-function VoucherCard({
-  voucher,
-  index,
-  used,
-}: {
-  voucher: GiftVoucher;
-  index: number;
-  used: boolean;
-}) {
-  const [flipped, setFlipped] = useState(false);
+const wheelSize = 300;
+const wheelRadius = wheelSize / 2 - 4;
+
+function wedgePath(index: number, count: number) {
+  const step = (Math.PI * 2) / count;
+  const point = (angle: number) => {
+    const x = wheelSize / 2 + wheelRadius * Math.sin(angle);
+    const y = wheelSize / 2 - wheelRadius * Math.cos(angle);
+    return `${x.toFixed(2)} ${y.toFixed(2)}`;
+  };
+  return `M${wheelSize / 2} ${wheelSize / 2} L${point(index * step)} A${wheelRadius} ${wheelRadius} 0 0 1 ${point((index + 1) * step)} Z`;
+}
+
+function VoucherWheel({ usedIds }: { usedIds: Set<string> }) {
+  const count = giftVouchers.length;
+  const step = 360 / count;
+  const [rotation, setRotation] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const [resultIndex, setResultIndex] = useState<number | null>(null);
+  const timerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(timerRef.current), []);
+
+  const spin = () => {
+    if (spinning) return;
+    const unused = giftVouchers
+      .map((voucher, index) => (usedIds.has(voucher.id) ? -1 : index))
+      .filter((index) => index >= 0);
+    const pool = unused.length ? unused : giftVouchers.map((_, index) => index);
+    const target = pool[Math.floor(Math.random() * pool.length)];
+    // Land somewhere inside the wedge (not on its edge), with a few full turns.
+    const offset = (0.15 + Math.random() * 0.7) * step;
+    const current = ((rotation % 360) + 360) % 360;
+    const wanted = (360 - (target * step + offset)) % 360;
+    const delta = ((wanted - current) % 360 + 360) % 360;
+    setResultIndex(null);
+    setSpinning(true);
+    setRotation(rotation + 360 * 5 + delta);
+    timerRef.current = window.setTimeout(() => {
+      setSpinning(false);
+      setResultIndex(target);
+    }, 4700);
+  };
+
+  const result = resultIndex === null ? null : giftVouchers[resultIndex];
+  const resultUsed = result ? usedIds.has(result.id) : false;
 
   return (
-    <li className={styles.voucher}>
-      <button
-        type="button"
-        className={`${styles.voucherFlip} ${flipped ? styles.isFlipped : ""} ${used ? styles.isUsed : ""}`}
-        onClick={() => setFlipped((value) => !value)}
-        aria-pressed={flipped}
-        aria-label={
-          flipped
-            ? `Phiếu ${index + 1}: ${voucher.title}`
-            : `Mở phiếu quà số ${index + 1}`
-        }
+    <div className={styles.wheelBox}>
+      <div className={styles.wheelStage}>
+        <svg className={styles.wheelPointer} viewBox="0 0 22 28" aria-hidden="true">
+          <path d="M11 28 1 6a11 11 0 0 1 20 0Z" />
+        </svg>
+        <svg
+          className={styles.wheelSvg}
+          viewBox={`0 0 ${wheelSize} ${wheelSize}`}
+          aria-hidden="true"
+        >
+          <g
+            className={styles.wheelRotor}
+            style={{ transform: `rotate(${rotation}deg)` }}
+          >
+            {giftVouchers.map((voucher, index) => {
+              const mid = ((index + 0.5) * step * Math.PI) / 180;
+              const labelRadius = wheelRadius * 0.68;
+              const x = wheelSize / 2 + labelRadius * Math.sin(mid);
+              const y = wheelSize / 2 - labelRadius * Math.cos(mid);
+              const fills = ["#c2415c", "#e8788f", "#8f2c43"];
+              return (
+                <g key={voucher.id} opacity={usedIds.has(voucher.id) ? 0.4 : 1}>
+                  <path
+                    d={wedgePath(index, count)}
+                    fill={fills[index % fills.length]}
+                    stroke="#1a0a0e"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={x}
+                    y={y}
+                    fill="#fff"
+                    fontSize="26"
+                    fontFamily="Geist Mono, monospace"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    transform={`rotate(${(index + 0.5) * step} ${x} ${y})`}
+                  >
+                    {index + 1}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+        <button
+          type="button"
+          className={styles.wheelHub}
+          onClick={spin}
+          disabled={spinning}
+          aria-label="Quay vòng quay quà tặng"
+        >
+          {spinning ? "..." : "QUAY"}
+        </button>
+      </div>
+
+      <div
+        className={`${styles.wheelResult} ${resultUsed ? styles.isUsed : ""}`}
+        aria-live="polite"
       >
-        <span className={`${styles.voucherFace} ${styles.voucherFront}`}>
-          <span className={styles.voucherIndex}>
-            {(index + 1).toString().padStart(2, "0")}
-          </span>
-          <HeartIcon className={styles.voucherHeart} />
-          <span className={styles.voucherTap}>CHẠM ĐỂ MỞ</span>
-        </span>
-        <span className={`${styles.voucherFace} ${styles.voucherBack}`}>
-          <span className={styles.voucherIndex}>
-            PHIẾU {(index + 1).toString().padStart(2, "0")}
-          </span>
-          <strong>{voucher.title}</strong>
-          <span>{voucher.note}</span>
-          {used && <em className={styles.voucherStamp}>ĐÃ DÙNG</em>}
-        </span>
-      </button>
-      <button
-        type="button"
-        className={styles.voucherUse}
-        onClick={() => usedStore.toggle(voucher.id)}
-        disabled={!flipped}
-      >
-        {used ? "Hoàn tác" : "Dùng phiếu này"}
-      </button>
-    </li>
+        {result ? (
+          <>
+            <span className={styles.sectionLabel}>
+              PHIẾU {(resultIndex! + 1).toString().padStart(2, "0")}
+            </span>
+            <strong>{result.title}</strong>
+            <span>{result.note}</span>
+            {resultUsed && <em className={styles.voucherStamp}>ĐÃ DÙNG</em>}
+            <button
+              type="button"
+              className={styles.voucherUse}
+              onClick={() => usedStore.toggle(result.id)}
+            >
+              {resultUsed ? "Hoàn tác" : "Dùng phiếu này"}
+            </button>
+          </>
+        ) : (
+          <span>{spinning ? "Đang quay..." : "Bấm QUAY để nhận một phiếu quà."}</span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -231,6 +310,8 @@ function MatchGame() {
             <div className={styles.reward} role="status">
               <HeartIcon className={styles.rewardHeart} />
               <p>{giftGame.reward}</p>
+              <span className={styles.sectionLabel}>{giftGame.bonusLabel}</span>
+              <p>{giftGame.bonus}</p>
               <button
                 type="button"
                 className={styles.ghostButton}
@@ -437,17 +518,8 @@ export function GiftPage() {
 
           <section aria-label="Phiếu quà tặng">
             <span className={styles.sectionLabel}>02 / PHIẾU QUÀ TẶNG</span>
-            <h2 className={styles.sectionTitle}>Năm điều anh nợ em</h2>
-            <ul className={styles.vouchers}>
-              {giftVouchers.map((voucher, index) => (
-                <VoucherCard
-                  key={voucher.id}
-                  voucher={voucher}
-                  index={index}
-                  used={usedIds.has(voucher.id)}
-                />
-              ))}
-            </ul>
+            <h2 className={styles.sectionTitle}>Vòng quay may mắn</h2>
+            <VoucherWheel usedIds={usedIds} />
           </section>
 
           <section aria-label="Trò chơi">

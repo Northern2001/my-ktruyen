@@ -26,13 +26,12 @@ export type GiftVoucher = {
   note: string;
 };
 
-// DEMO: replace with the vouchers that fit the two of you.
 export const giftVouchers: readonly GiftVoucher[] = [
-  { id: "date", title: "Một buổi hẹn em chọn", note: "Em chọn nơi, chọn giờ. Anh chỉ việc đến." },
-  { id: "hug", title: "Một cái ôm thật lâu", note: "Đến khi nào em nói đủ thì thôi." },
-  { id: "dinner", title: "Bữa tối anh nấu", note: "Em gọi món, anh cố gắng hết sức." },
-  { id: "wish", title: "Một điều ước nhỏ", note: "Trong khả năng của anh, và anh sẽ thực hiện." },
-  { id: "peace", title: "Một ngày anh nhường em", note: "Cả ngày hôm đó, em luôn đúng." },
+  { id: "item", title: "Một món đồ em muốn", note: "Em thích món gì, anh mua tặng em." },
+  { id: "cook", title: "Anh tự nấu cho em một bữa", note: "Em gọi món, anh vào bếp." },
+  { id: "stay-home", title: "Một ngày chỉ ở nhà cùng nhau", note: "Không đi đâu cả, chỉ có hai đứa mình." },
+  { id: "trip", title: "Đi một nơi em chọn", note: "Em chọn nơi và tự sắp xếp, anh đi theo." },
+  { id: "eat-out", title: "Đi ăn ở nơi em chọn", note: "Em muốn ăn ở đâu, mình đến đó." },
 ] as const;
 
 export const giftGame = {
@@ -41,6 +40,9 @@ export const giftGame = {
   hint: "Lật hai thẻ giống nhau để ghép lại. Ghép hết, anh có một điều muốn nói.",
   // DEMO: shown once every pair has been matched.
   reward: "Em tìm được hết những khoảnh khắc của mình rồi. Còn anh thì đã tìm được em từ lâu.",
+  // Extra prize unlocked once every pair has been matched.
+  bonusLabel: "PHẦN THƯỞNG THÊM",
+  bonus: "Thêm một phần thưởng bất kỳ em muốn. Em muốn gì cũng được, cứ nói với anh.",
   // Photos come from public/memory-media; swap in the ones that matter most.
   photos: [
     "/memory-media/IMG_7587.jpg",
