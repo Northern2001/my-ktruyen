@@ -9,7 +9,7 @@
   inset: 0;
   isolation: isolate;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
   background:
     radial-gradient(110% 70% at 50% 0%, rgba(194, 65, 92, 0.32), transparent 62%),
