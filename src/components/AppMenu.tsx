@@ -9,6 +9,7 @@ const menuItems = [
   { href: "/memory/", label: "Memory", index: "02" },
   { href: "/mp3/", label: "MP3", index: "03" },
   { href: "/inlove/", label: "InLove", index: "04" },
+  { href: "/gift/", label: "20/10", index: "05" },
 ] as const;
 
 export function AppMenu() {
