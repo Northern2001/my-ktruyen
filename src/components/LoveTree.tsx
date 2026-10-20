@@ -1,59 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { loveStartDate } from "../lib/love-date";
 import { loveTree } from "./loveTreeContent";
 import styles from "./LoveTree.module.css";
 
-const storageKey = "mkt-gift-tree";
 const msPerDay = 24 * 60 * 60 * 1000;
 const rainMs = 3400;
-
-type TreeSave = { count: number; last: string };
-
-const listeners = new Set<() => void>();
-
-// Watering progress is a per-device convenience, so it lives in localStorage.
-const treeStore = {
-  subscribe(listener: () => void) {
-    listeners.add(listener);
-    return () => {
-      listeners.delete(listener);
-    };
-  },
-  getSnapshot() {
-    try {
-      return window.localStorage.getItem(storageKey) ?? "";
-    } catch {
-      return "";
-    }
-  },
-  getServerSnapshot: () => "",
-  save(value: TreeSave) {
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(value));
-    } catch {
-      // Storage can be blocked (private mode); the tree just won't remember.
-    }
-    listeners.forEach((notify) => notify());
-  },
-};
-
-function parseSave(raw: string): TreeSave {
-  try {
-    const value = JSON.parse(raw) as Partial<TreeSave>;
-    return {
-      count: Math.max(0, Math.floor(Number(value.count) || 0)),
-      last: typeof value.last === "string" ? value.last : "",
-    };
-  } catch {
-    return { count: 0, last: "" };
-  }
-}
-
-function dayKey(date: Date) {
-  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-}
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
@@ -73,7 +26,9 @@ const groundFlowers = [
   [34, 346, 16, "#f4a6b8"], [78, 350, 20, "#fff1c9"], [102, 344, 14, "#b9a7ff"],
   [150, 352, 18, "#ff9a86"], [172, 346, 22, "#f4a6b8"], [232, 348, 16, "#fff1c9"],
   [300, 352, 20, "#b9a7ff"], [326, 344, 14, "#ff9a86"], [364, 350, 18, "#f4a6b8"],
-  [208, 354, 12, "#b9a7ff"],
+  [208, 354, 12, "#b9a7ff"], [18, 352, 14, "#fff1c9"], [126, 356, 13, "#f4a6b8"],
+  [190, 358, 11, "#ff9a86"], [256, 356, 15, "#f4a6b8"], [344, 356, 12, "#fff1c9"],
+  [386, 346, 16, "#b9a7ff"],
 ] as const;
 
 const birds = [
@@ -92,12 +47,18 @@ const ripples = [
   [110, 336], [150, 340], [200, 334], [250, 340], [290, 336], [60, 340], [340, 340],
 ] as const;
 
-const slotCount = [0, 0, 0, 14, 22, 24] as const;
-const treeScale = [0, 0.32, 0.6, 0.82, 0.94, 1] as const;
-const nestScale = [0, 0, 0.7, 0.85, 1, 1.1] as const;
-const houseScale = [0, 0, 0.7, 0.85, 1, 1] as const;
-const animalScale = [0, 0.7, 0.8, 0.9, 1, 1] as const;
-const birdCount = [0, 0, 0, 1, 2, 3] as const;
+// The tree, animals and nest change once every few days: `step` counts how
+// many of those intervals have passed since the day the two of them got together.
+const daysPerStep = 3;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+// A size that starts at `min` and grows to 1 over `span` steps after `from`.
+const growth = (step: number, from: number, span: number, min: number) =>
+  min + (1 - min) * clamp((step - from) / span, 0, 1);
+
+const nestEggs = [[-10, -7], [0, -10], [10, -7]] as const;
 
 function Blossom({ x, y, r, bloomed }: { x: number; y: number; r: number; bloomed: boolean }) {
   if (!bloomed) return <circle cx={x} cy={y} r={r * 0.4} fill="#b8506b" />;
@@ -169,29 +130,23 @@ function Egg({ x, y }: { x: number; y: number }) {
   );
 }
 
-function Nest({ stage }: { stage: number }) {
+function Nest({ step }: { step: number }) {
+  const eggs = clamp(step - 24, 0, 3);
+  const chicks = clamp(step - 39, 0, 3);
+
   return (
     <g transform="translate(186 196)">
-      <g className={styles.grow} style={{ transform: `scale(${nestScale[stage]})` }}>
+      <g
+        className={styles.grow}
+        style={{ transform: `scale(${0.7 + 0.4 * clamp((step - 10) / 110, 0, 1)})` }}
+      >
         <ellipse cx="0" cy="-2" rx="18" ry="8" fill="#6f4429" />
-        {stage === 3 && (
-          <>
-            <Egg x={-6} y={-6} />
-            <Egg x={5} y={-6} />
-          </>
-        )}
-        {stage === 4 && (
-          <>
-            <Chick x={-6} y={-8} />
-            <Chick x={6} y={-8} />
-          </>
-        )}
-        {stage >= 5 && (
-          <>
-            <Chick x={-10} y={-8} />
-            <Chick x={0} y={-11} />
-            <Chick x={10} y={-8} />
-          </>
+        {nestEggs.map(([x, y], index) =>
+          index < chicks ? (
+            <Chick key={index} x={x} y={y - 1} />
+          ) : index < eggs ? (
+            <Egg key={index} x={x * 0.7} y={y + 1} />
+          ) : null,
         )}
         <path d="M-19 -3 Q0 14 19 -3 Q0 3 -19 -3 Z" fill="#9b6b3f" />
         <path
@@ -276,14 +231,80 @@ function SnakeHouse() {
   );
 }
 
-export function LoveTree({ now }: { now: Date | null }) {
-  const raw = useSyncExternalStore(
-    treeStore.subscribe,
-    treeStore.getSnapshot,
-    treeStore.getServerSnapshot,
+const stars = [
+  [30, 30], [70, 80], [112, 42], [150, 98], [196, 28], [244, 70], [286, 36],
+  [330, 90], [366, 46], [52, 130], [128, 150], [268, 138], [350, 140], [220, 112],
+] as const;
+
+type SkyPhase = { top: string; bottom: string; ground: string; night: boolean };
+
+function skyPhase(hour: number): SkyPhase {
+  if (hour >= 7 && hour < 17) {
+    return { top: "#5fb4ea", bottom: "#d4eefa", ground: "#4f8f63", night: false };
+  }
+  if ((hour >= 5 && hour < 7) || (hour >= 17 && hour < 19)) {
+    return { top: "#5b6fb8", bottom: "#ffb48a", ground: "#3d6b55", night: false };
+  }
+  return { top: "#0b1130", bottom: "#27305f", ground: "#1c3a33", night: true };
+}
+
+// Sun by day, moon and stars by night; both ride an arc across the sky using
+// the device's own clock, so it is bright or dark wherever the page is opened.
+function Sky({ hour, phase }: { hour: number; phase: SkyPhase }) {
+  const isDay = hour >= 6 && hour < 18;
+  const t = isDay ? (hour - 6) / 12 : ((hour + 6) % 24) / 12;
+  const x = 40 + 320 * t;
+  const y = 250 - 215 * Math.sin(Math.PI * t);
+  const lowSun = t < 0.12 || t > 0.88;
+
+  return (
+    <g>
+      <defs>
+        <linearGradient id="love-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={phase.top} />
+          <stop offset="1" stopColor={phase.bottom} />
+        </linearGradient>
+        <radialGradient id="love-glow">
+          <stop offset="0" stopColor={isDay ? "#fff3b0" : "#dfe6ff"} stopOpacity={isDay ? 0.8 : 0.22} />
+          <stop offset="1" stopColor={isDay ? "#fff3b0" : "#dfe6ff"} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="400" height="372" fill="url(#love-sky)" />
+      {phase.night &&
+        stars.map(([sx, sy], index) => (
+          <circle
+            key={index}
+            className={styles.star}
+            cx={sx}
+            cy={sy}
+            r={index % 3 === 0 ? 1.6 : 1.1}
+            fill="#fff"
+            style={{ animationDelay: `${(index % 5) * 0.6}s` }}
+          />
+        ))}
+      {!phase.night && (
+        <g className={styles.cloud} fill="#fff" opacity="0.85">
+          <ellipse cx="90" cy="74" rx="26" ry="9" />
+          <ellipse cx="108" cy="66" rx="16" ry="8" />
+          <ellipse cx="300" cy="112" rx="30" ry="10" />
+          <ellipse cx="320" cy="103" rx="17" ry="8" />
+        </g>
+      )}
+      <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
+        <circle r="48" fill="url(#love-glow)" />
+        {isDay ? (
+          <circle r="20" fill={lowSun ? "#ff9f43" : "#ffd84a"} />
+        ) : (
+          <path d="M0 -20 A20 20 0 1 0 0 20 A15 15 0 1 1 0 -20 Z" fill="#fff6c8" />
+        )}
+      </g>
+    </g>
   );
-  const save = useMemo(() => parseSave(raw), [raw]);
+}
+
+export function LoveTree({ now }: { now: Date | null }) {
   const [raining, setRaining] = useState(false);
+  const [waterings, setWaterings] = useState(0);
   const timerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(timerRef.current), []);
@@ -305,24 +326,34 @@ export function LoveTree({ now }: { now: Date | null }) {
     Math.floor((startOfDay(now) - startOfDay(loveStartDate)) / msPerDay),
   );
 
+  // Everything below depends only on the days in love, never on the device, so
+  // the tree looks the same for everyone who opens the page.
+  const step = Math.floor(days / daysPerStep);
+  const daysToChange = daysPerStep - (days % daysPerStep);
+
   const stage = loveTree.stages.reduce(
     (found, entry, index) => (days >= entry.from ? index : found),
     0,
   );
-  const nextStage = loveTree.stages[stage + 1];
 
-  const total = slotCount[stage];
-  const base = stage === 4 ? 8 : stage === 5 ? total : 0;
-  const bloomed = Math.min(total, base + save.count);
-  const flowerCount = Math.min(groundFlowers.length, stage * 2 + save.count);
+  const hasCanopy = step >= 10;
+  const treeSize = hasCanopy
+    ? growth(step, 10, 110, 0.5)
+    : 0.2 + 0.04 * step;
+  const budCount = clamp(step - 33, 0, slots.length);
+  const bloomCount = clamp(step - 36, 0, slots.length);
+  const flowerCount = clamp(step - 2, 0, groundFlowers.length);
+  const animalSize = growth(step, 3, 60, 0.6);
+  const houseSize = growth(step, 12, 60, 0.6);
+  const birdTotal = (step >= 30 ? 1 : 0) + (step >= 45 ? 1 : 0) + (step >= 60 ? 1 : 0);
 
-  const wateredToday = save.last === dayKey(now);
-  const note =
-    save.count > 0 ? loveTree.notes[(save.count - 1) % loveTree.notes.length] : null;
+  const hour = now.getHours() + now.getMinutes() / 60;
+  const phase = skyPhase(hour);
+
+  const note = waterings > 0 ? loveTree.notes[(waterings - 1) % loveTree.notes.length] : null;
 
   const water = () => {
-    if (wateredToday) return;
-    treeStore.save({ count: save.count + 1, last: dayKey(new Date()) });
+    setWaterings((value) => value + 1);
     setRaining(true);
     window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => setRaining(false), rainMs);
@@ -347,32 +378,36 @@ export function LoveTree({ now }: { now: Date | null }) {
             role="img"
             aria-label={`Cây tình yêu ở giai đoạn ${loveTree.stages[stage].name}`}
           >
-            <ellipse cx="200" cy="332" rx="190" ry="17" fill="#26110f" />
-            <ellipse cx="200" cy="328" rx="150" ry="11" fill="#3a1a22" />
+            <Sky hour={hour} phase={phase} />
+            <path
+              d="M0 334 Q70 316 150 326 T290 322 T400 330 V372 H0 Z"
+              fill={phase.ground}
+            />
+            <g style={{ filter: phase.night ? "brightness(0.62)" : undefined }}>
             {raining && <ellipse className={styles.puddle} cx="200" cy="334" rx="120" ry="8" fill="#6bb6e6" />}
 
-            {stage >= 2 && (
+            {step >= 12 && (
               <g transform="translate(52 326)">
-                <g className={styles.grow} style={{ transform: `scale(${houseScale[stage]})` }}>
+                <g className={styles.grow} style={{ transform: `scale(${houseSize})` }}>
                   <MonkeyHouse />
                 </g>
               </g>
             )}
-            {stage >= 2 && (
+            {step >= 12 && (
               <g transform="translate(348 326)">
-                <g className={styles.grow} style={{ transform: `scale(${houseScale[stage]})` }}>
+                <g className={styles.grow} style={{ transform: `scale(${houseSize})` }}>
                   <SnakeHouse />
                 </g>
               </g>
             )}
 
             <g transform="translate(50 12)">
-              {stage === 0 && <ellipse cx="150" cy="306" rx="9" ry="6" fill="#c98d8d" />}
+              {step < 1 && <ellipse cx="150" cy="306" rx="9" ry="6" fill="#c98d8d" />}
 
-              {stage >= 1 && (
+              {step >= 1 && (
                 <g
                   className={styles.treeGrow}
-                  style={{ transform: `scale(${treeScale[stage]})` }}
+                  style={{ transform: `scale(${treeSize})` }}
                 >
                   <path
                     d="M144 312 C146 270 142 240 150 200 C156 240 154 272 156 312 Z"
@@ -385,7 +420,7 @@ export function LoveTree({ now }: { now: Date | null }) {
                     strokeLinecap="round"
                     fill="none"
                   />
-                  {stage === 1 ? (
+                  {!hasCanopy ? (
                     <>
                       <ellipse cx="124" cy="196" rx="22" ry="11" fill="#7fae95" transform="rotate(-24 124 196)" />
                       <ellipse cx="178" cy="190" rx="22" ry="11" fill="#9cc7ae" transform="rotate(24 178 190)" />
@@ -398,11 +433,11 @@ export function LoveTree({ now }: { now: Date | null }) {
                       <ellipse cx="150" cy="98" rx="56" ry="44" fill="#7fbf9e" />
                     </>
                   )}
-                  {slots.slice(0, total).map(([x, y, r], index) => (
-                    <Blossom key={index} x={x} y={y} r={r} bloomed={index < bloomed} />
+                  {slots.slice(0, budCount).map(([x, y, r], index) => (
+                    <Blossom key={index} x={x} y={y} r={r} bloomed={index < bloomCount} />
                   ))}
-                  {stage >= 2 && <Nest stage={stage} />}
-                  {birds.slice(0, birdCount[stage]).map((bird, index) => (
+                  {hasCanopy && <Nest step={step} />}
+                  {birds.slice(0, birdTotal).map((bird, index) => (
                     <g key={index} transform={`translate(${bird.x} ${bird.y})`}>
                       <g className={styles.hop} style={{ animationDelay: `${index * 0.7}s` }}>
                         <Bird body={bird.body} wing={bird.wing} flip={bird.flip} />
@@ -413,20 +448,22 @@ export function LoveTree({ now }: { now: Date | null }) {
               )}
             </g>
 
-            {stage >= 1 && (
+            {step >= 3 && (
               <g transform="translate(130 328)">
-                <g className={styles.grow} style={{ transform: `scale(${animalScale[stage]})` }}>
+                <g className={styles.grow} style={{ transform: `scale(${animalSize})` }}>
                   <Monkey />
                 </g>
               </g>
             )}
-            {stage >= 1 && (
+            {step >= 3 && (
               <g transform="translate(272 328)">
-                <g className={styles.grow} style={{ transform: `scale(${animalScale[stage]})` }}>
+                <g className={styles.grow} style={{ transform: `scale(${animalSize})` }}>
                   <Snake />
                 </g>
               </g>
             )}
+
+            </g>
 
             {groundFlowers.slice(0, flowerCount).map(([x, y, h, color], index) => (
               <GroundFlower key={index} x={x} y={y} h={h} color={color} />
@@ -467,23 +504,17 @@ export function LoveTree({ now }: { now: Date | null }) {
 
         <div className={styles.info}>
           <span className={styles.count}>
-            Đã tưới {save.count} lần
-            {total > 0 ? ` · ${bloomed}/${total} hoa đã nở` : ""}
+            {budCount > 0
+              ? `${bloomCount} hoa đã nở · ${budCount - bloomCount} nụ đang chờ`
+              : "Cây còn đang lớn, chưa có nụ hoa"}
           </span>
-          {nextStage && (
-            <span className={styles.next}>
-              {nextStage.name} sau {nextStage.from - days} ngày nữa
-            </span>
-          )}
-          <button
-            type="button"
-            className={styles.water}
-            onClick={water}
-            disabled={wateredToday}
-          >
-            {wateredToday ? loveTree.wateredLabel : loveTree.waterLabel}
+          <span className={styles.next}>
+            Cây sẽ thay đổi sau {daysToChange} ngày nữa
+          </span>
+          <button type="button" className={styles.water} onClick={water}>
+            {loveTree.waterLabel}
           </button>
-          {note && wateredToday && (
+          {note && (
             <p className={styles.note} role="status">
               {note}
             </p>
