@@ -2,9 +2,9 @@
 
 import NextImage from "next/image";
 import { useMemo, useSyncExternalStore } from "react";
+import { loveStartDate } from "../lib/love-date";
 import { sitePath } from "../lib/site-path";
 
-const loveStartDate = new Date(2026, 6, 12, 0, 0, 0, 0);
 const msPerSecond = 1000;
 const msPerMinute = msPerSecond * 60;
 const msPerHour = msPerMinute * 60;

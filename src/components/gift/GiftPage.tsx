@@ -16,6 +16,7 @@ import {
   giftIntro,
   giftLetter,
   giftMusic,
+  giftTree,
   giftVouchers,
 } from "./giftContent";
 import {
@@ -26,6 +27,7 @@ import {
 } from "./flowers";
 const BouquetCanvas = dynamic(() => import("./BouquetCanvas"), { ssr: false });
 import { FlowerIcon } from "./FlowerArt";
+import { LoveTree } from "./LoveTree";
 import styles from "./GiftPage.module.css";
 
 const mediaSourceId = "gift-music";
@@ -527,6 +529,13 @@ export function GiftPage() {
             <h2 className={styles.sectionTitle}>{giftGame.title}</h2>
             <p className={styles.hint}>{giftGame.hint}</p>
             <MatchGame />
+          </section>
+
+          <section aria-label="Cây tình yêu">
+            <span className={styles.sectionLabel}>04 / {giftTree.eyebrow}</span>
+            <h2 className={styles.sectionTitle}>{giftTree.title}</h2>
+            <p className={styles.hint}>{giftTree.hint}</p>
+            <LoveTree />
           </section>
 
           <footer className={styles.footer}>
