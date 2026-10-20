@@ -3,6 +3,7 @@
 import NextImage from "next/image";
 import { useMemo, useSyncExternalStore } from "react";
 import { loveStartDate } from "../lib/love-date";
+import { LoveTree } from "./LoveTree";
 import { sitePath } from "../lib/site-path";
 
 const msPerSecond = 1000;
@@ -346,6 +347,8 @@ export function InLoveCounter() {
             <span className="inlove-breakdown__value">{elapsed ? formatNumber(elapsed.totalMinutes) : "—"}</span>
           </div>
         </section>
+
+        <LoveTree now={now} />
 
         <section className="inlove-milestones" aria-label="Cột mốc sắp tới">
           <header className="inlove-milestones__header">
