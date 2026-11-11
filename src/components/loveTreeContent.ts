@@ -3,7 +3,7 @@
 // is just for fun. `from` is the day count where each named stage begins.
 export const loveTree = {
   eyebrow: "CÂY TÌNH YÊU",
-  hint: "Cây lớn lên theo tổng số ngày mình yêu nhau, cứ 3 ngày lại đổi thay một lần, ai mở ra cũng thấy cây giống nhau. Em muốn tưới bao nhiêu cũng được.",
+  hint: "Cây lớn lên theo tổng số ngày mình yêu nhau, cứ 3 ngày lại thêm cành, thêm hoa. Trời nơi em đang nắng, mưa, gió hay tuyết thì khu vườn cũng y như vậy. Em muốn tưới bao nhiêu cũng được.",
   waterLabel: "Tưới cây",
   stages: [
     { from: 0, name: "Hạt giống" },

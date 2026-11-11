@@ -70,16 +70,18 @@
 
 .sway {
   transform-origin: 0 0;
-  animation: love-tree-sway 3.4s ease-in-out infinite;
+  animation: love-tree-sway var(--dur, 3.4s) ease-in-out infinite alternate;
+}
+
+.treeSway {
+  transform-origin: 150px 312px;
+  animation: love-tree-sway var(--dur, 2.4s) ease-in-out infinite alternate;
 }
 
 .hop {
   animation: love-tree-hop 3.2s ease-in-out infinite;
 }
 
-.star {
-  animation: love-tree-twinkle 3s ease-in-out infinite;
-}
 
 .cloud {
   animation: love-tree-cloud 40s ease-in-out infinite alternate;
@@ -151,11 +153,6 @@
   }
 }
 
-@keyframes love-tree-twinkle {
-  50% {
-    opacity: 0.25;
-  }
-}
 
 @keyframes love-tree-cloud {
   to {
@@ -170,8 +167,11 @@
 }
 
 @keyframes love-tree-sway {
-  50% {
-    transform: rotate(-2.5deg);
+  from {
+    transform: rotate(calc(var(--amp, 2deg) * -1));
+  }
+  to {
+    transform: rotate(var(--amp, 2deg));
   }
 }
 
@@ -184,6 +184,334 @@
   88% {
     transform: translateY(-4px);
   }
+}
+
+.sunRays {
+  transform-origin: 0 0;
+  animation: love-tree-spin 26s linear infinite;
+}
+
+.cloudFast {
+  animation: love-tree-cloud-fast 9s ease-in-out infinite alternate;
+}
+
+.gust {
+  opacity: 0;
+  animation: love-tree-gust 3.6s linear infinite;
+}
+
+.leafFly {
+  transform-origin: 0 0;
+  animation: love-tree-leaf 6s linear infinite;
+}
+
+.flutter {
+  animation: love-tree-flutter 9s ease-in-out infinite;
+}
+
+.wings {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: love-tree-flap 0.28s ease-in-out infinite alternate;
+}
+
+.heart {
+  opacity: 0;
+  animation: love-tree-heart 2.7s ease-out infinite;
+}
+
+.ballX {
+  animation: love-tree-ball-x 1.6s ease-in-out infinite alternate;
+}
+
+.ballY {
+  animation: love-tree-ball-y 0.8s ease-in-out infinite;
+}
+
+.monkey_hug,
+.snake_hug,
+.monkey_kiss,
+.snake_kiss,
+.monkey_play,
+.snake_play,
+.monkey_umbrella,
+.snake_umbrella,
+.monkey_cold,
+.snake_cold {
+  transform-origin: 0 0;
+}
+
+.monkey_hug {
+  animation: love-tree-hug-m 2.4s ease-in-out infinite alternate;
+}
+
+.snake_hug {
+  animation: love-tree-hug-s 2.4s ease-in-out infinite alternate;
+}
+
+.monkey_kiss {
+  animation: love-tree-kiss-m 1.3s ease-in-out infinite alternate;
+}
+
+.snake_kiss {
+  animation: love-tree-kiss-s 1.3s ease-in-out infinite alternate;
+}
+
+.monkey_play {
+  animation: love-tree-play 0.9s ease-in-out infinite;
+}
+
+.snake_play {
+  animation: love-tree-play 0.9s ease-in-out 0.45s infinite;
+}
+
+.monkey_umbrella {
+  transform: translateX(3px) rotate(2deg);
+}
+
+.snake_umbrella {
+  transform: translateX(-3px) rotate(-2deg);
+}
+
+.monkey_cold,
+.snake_cold {
+  animation: love-tree-shiver 0.3s linear infinite;
+}
+
+.snow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.snow span {
+  position: absolute;
+  top: -4%;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.9;
+  animation: love-tree-snow 8s linear infinite;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  animation: love-tree-flash 6s linear infinite;
+}
+
+@keyframes love-tree-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes love-tree-cloud-fast {
+  to {
+    transform: translateX(110px);
+  }
+}
+
+@keyframes love-tree-gust {
+  0% {
+    opacity: 0;
+    transform: translateX(-120px);
+  }
+  15%,
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(480px);
+  }
+}
+
+@keyframes love-tree-leaf {
+  0% {
+    transform: translate(-20px, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(220px, calc(var(--drop, 60px) * 0.3)) rotate(360deg);
+  }
+  100% {
+    transform: translate(440px, var(--drop, 60px)) rotate(720deg);
+  }
+}
+
+@keyframes love-tree-flutter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(40px, -18px);
+  }
+  50% {
+    transform: translate(80px, 6px);
+  }
+  75% {
+    transform: translate(34px, -24px);
+  }
+}
+
+@keyframes love-tree-flap {
+  to {
+    transform: scaleX(0.3);
+  }
+}
+
+@keyframes love-tree-heart {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1.25);
+  }
+}
+
+@keyframes love-tree-ball-x {
+  to {
+    transform: translateX(24px);
+  }
+}
+
+@keyframes love-tree-ball-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes love-tree-hug-m {
+  to {
+    transform: translateX(9px) rotate(6deg);
+  }
+}
+
+@keyframes love-tree-hug-s {
+  to {
+    transform: translateX(-9px) rotate(-6deg);
+  }
+}
+
+@keyframes love-tree-kiss-m {
+  to {
+    transform: translateX(8px) rotate(7deg);
+  }
+}
+
+@keyframes love-tree-kiss-s {
+  to {
+    transform: translateX(-7px) rotate(-8deg);
+  }
+}
+
+@keyframes love-tree-play {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-9px) rotate(-5deg);
+  }
+  70% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
+
+@keyframes love-tree-shiver {
+  0%,
+  100% {
+    transform: translateX(-0.5px);
+  }
+  50% {
+    transform: translateX(0.5px);
+  }
+}
+
+@keyframes love-tree-snow {
+  0% {
+    top: -4%;
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateX(12px);
+  }
+  100% {
+    top: 96%;
+    transform: translateX(-6px);
+    opacity: 0.2;
+  }
+}
+
+@keyframes love-tree-flash {
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+  }
+  93% {
+    opacity: 0.5;
+  }
+  94% {
+    opacity: 0;
+  }
+  95.5% {
+    opacity: 0.35;
+  }
+  97% {
+    opacity: 0;
+  }
+}
+
+.weather {
+  color: #bfe6fa;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.previews {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.previewBtn,
+.previewOn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.previewOn {
+  border-color: #f4a6b8;
+  background: rgba(244, 166, 184, 0.12);
+  color: #f4a6b8;
 }
 
 .info {
@@ -249,8 +577,27 @@
   .rain span,
   .ripple,
   .puddle,
-  .star,
-  .cloud {
+  .cloud,
+  .cloudFast,
+  .treeSway,
+  .sunRays,
+  .gust,
+  .leafFly,
+  .flutter,
+  .wings,
+  .heart,
+  .ballX,
+  .ballY,
+  .monkey_hug,
+  .snake_hug,
+  .monkey_kiss,
+  .snake_kiss,
+  .monkey_play,
+  .snake_play,
+  .monkey_cold,
+  .snake_cold,
+  .snow span,
+  .flash {
     animation: none;
   }
 }
